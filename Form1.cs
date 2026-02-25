@@ -11,6 +11,7 @@ using S7.Net;
 using S7.Net.Types;
 using SymbolFactoryDotNet;
 using System.Data.SqlClient;
+using System.Threading;
 
 namespace ScadaQTNN
 {
@@ -62,6 +63,8 @@ namespace ScadaQTNN
         private ushort[] lastErrorCode = new ushort[7];    // Mã lỗi trước đó
         private bool[] wellCommState = new bool[7];
 
+        private PollingService _pollingService;
+        private CancellationTokenSource _readLoopCts;
 
 
         private void ShowErrorOnce(string message)
@@ -382,6 +385,7 @@ namespace ScadaQTNN
     {6, "Giếng NL.06"},
     {7, "Giếng NL.07"}
 };
+        private BindingSource alarmSource = new BindingSource();
 
         private void LoadAlarmGrid()
         {
@@ -418,8 +422,9 @@ namespace ScadaQTNN
                 dt.Columns.Remove("WellId");          // bỏ cột id cũ
                 dt.Columns["WellName"].SetOrdinal(2); // đưa về vị trí thứ 3
 
-                dataGridView1.DataSource = null;
-                dataGridView1.DataSource = dt;
+                alarmSource.DataSource = dt;
+                dataGridView1.DataSource = alarmSource;
+
 
                 // ==========================
                 // 🔥 CẤU HÌNH GRID
@@ -452,7 +457,18 @@ namespace ScadaQTNN
             }
         }
 
-
+        private void MarkAlarmHandled(int alarmId)
+        {
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                if ((int)row.Cells["Id"].Value == alarmId)
+                {
+                    row.Cells["IsHandled"].Value = true;
+                    row.DefaultCellStyle.BackColor = Color.Honeydew;
+                    break;
+                }
+            }
+        }
 
 
         #endregion
@@ -670,6 +686,130 @@ namespace ScadaQTNN
 
         #endregion
         #region SQL_CONNECT
+
+        // Chèn vào Form1.cs (private method)
+        private async Task ReadAndProcessOnceAsync(CancellationToken token)
+        {
+            try
+            {
+                if (isEditting) return; // nếu đang edit thì không đọc/ghi
+                                        // 1) Đọc PLC (có thể tốn thời gian)
+                plc.ReadWells(Wells); // đọc mảng Wells (nếu thư viện S7.Net hỗ trợ async, chuyển sang async)
+
+                byte[] db5 = plc.ReadDBRange(5, 296, 336);
+                if (db5 == null || db5.Length == 0) return;
+
+                // Xử lý buffer → tạo một snapshot (chỉ chứa dữ liệu cần để update UI)
+                var snapshot = new
+                {
+                    WellsCopy = CloneWellStatuses(Wells), // tạo shallow copy để an toàn (xem helper bên dưới)
+                    Db5 = (byte[])db5.Clone() // nếu muốn phân tích thêm
+                };
+
+                // 2) Xử lý lỗi & ghi cảnh báo vào DB (nên gọi async)
+                // Ví dụ: nếu phát hiện inverterFault mới → InsertWellAlarm (dùng ExecuteNonQueryAsync)
+                // Thực hiện thao tác DB trong background (không update UI trực tiếp ở đây)
+                await UpdateAlarmsAsync(snapshot).ConfigureAwait(false);
+
+                // 3) Sau khi xử lý, cập nhật UI 1 lần (sử dụng BeginInvoke)
+                this.BeginInvoke((Action)(() =>
+                {
+                    ApplySnapshotToUI(snapshot);
+                }));
+            }
+            catch (Exception ex)
+            {
+                // Các lỗi không nên ném lên UI; ghi log và hiển thị lỗi giới hạn
+                this.BeginInvoke((Action)(() => ShowErrorOnce(ex.Message)));
+            }
+        }
+
+        private WellStatus[] CloneWellStatuses(WellStatus[] source)
+        {
+            var arr = new WellStatus[source.Length];
+            for (int i = 0; i < source.Length; i++)
+            {
+                var s = source[i];
+                arr[i] = new WellStatus
+                {
+                    RunMode = s.RunMode,
+                    Frequency = s.Frequency,
+                    ControlMode = s.ControlMode,
+                    BitCheck = s.BitCheck,
+                    WaterLevel = s.WaterLevel,
+                    Flow = s.Flow,
+                    TotalFlow = s.TotalFlow,
+                    TankFloatLevel = s.TankFloatLevel,
+                    TankCurrent = s.TankCurrent,
+                    TankVoltage = s.TankVoltage,
+                    ErrorCode = s.ErrorCode,
+                    IsRemoteFlag = s.IsRemoteFlag
+                };
+            }
+            return arr;
+        }
+
+        private async Task UpdateAlarmsAsync(object snapshotObj)
+        {
+            // snapshotObj là dạng anonymous trên; cast nếu cần
+            // Ở đây mình chỉ minh họa: kiểm tra và chèn alarm nếu cần
+            dynamic snapshot = snapshotObj;
+            WellStatus[] wellsCopy = snapshot.WellsCopy;
+
+            // Tạo list các insert tasks để chạy tuần tự hoặc hàng loạt
+            for (int i = 0; i < wellsCopy.Length; i++)
+            {
+                ushort currentError = wellsCopy[i].ErrorCode;
+                bool inverterFault = currentError != 0 && wellsCopy[i].RunMode >= 2;
+                bool commFault = false; // cần đọc từ db5 tương tự như trước (bạn có thể parse)
+
+                if (inverterFault && !wellFaultState[i])
+                {
+                    // InsertWellAlarm trước đây chạy sync — thay bằng ExecuteNonQueryAsync
+                    string sql = @"
+                INSERT INTO dbo.Well_Alarm (WellId, ErrorCode, ErrorTime, Description, IsHandled)
+                VALUES (@WellId, @ErrorCode, @ErrorTime, @Description, 0)";
+                    await ClassSQL.ExecuteNonQueryAsync(sql,
+                        new SqlParameter("@WellId", i + 1),
+                        new SqlParameter("@ErrorCode", (int)currentError),
+                        new SqlParameter("@ErrorTime", DateTime.Now),
+                        new SqlParameter("@Description", GetFaultText(currentError))
+                    ).ConfigureAwait(false);
+
+                    // đánh dấu local để tránh insert trùng trong cùng 1 phiên
+                    wellFaultState[i] = true;
+                    lastErrorCode[i] = currentError;
+                }
+
+                // Tương tự xử lý commFault...
+            }
+
+            // Sau khi thay đổi dữ liệu DB, ta cần reload alarm grid nhưng LoadAlarmGrid() hiện sync.
+            // Vì DataGridView chỉ update trên UI thread, ta sẽ gọi LoadAlarmGrid() qua BeginInvoke từ Form UI
+            this.BeginInvoke((Action)(() => LoadAlarmGrid()));
+        }
+
+        private void ApplySnapshotToUI(dynamic snapshot)
+        {
+            WellStatus[] wellsCopy = snapshot.WellsCopy;
+
+            // Cập nhật tank/freq/status tương tự như code cũ nhưng dùng wellsCopy
+            // Ví dụ cập nhật một số controls:
+            textBox37.Text = wellsCopy[0].Frequency.ToString("0.0");
+            ShowPlcControlMode(comboBox39, wellsCopy[0].ControlModeText);
+            // ... tiếp tục cho các control khác ...
+            // Cập nhật water panels:
+            for (int i = 0; i < wellsCopy.Length && i < waterPanels.Length; i++)
+            {
+                UpdateWaterLevel(waterPanels[i], wellsCopy[i].WaterLevel, MaxWaterLevels[i]);
+            }
+
+            // Cập nhật các multipeState — chúng đã có check "if unchanged => return" nên không quá tốn
+            multipeState(standardControl63, (byte)wellsCopy[0].RunMode);
+            // ... các multipeState kh��c ...
+            UpdateAllSymbols(); // nếu vẫn cần
+        }
+
         public void InsertHistory(int wellId, double freq, double flow, double level)
         {
             string query = @"INSERT INTO Well_History
@@ -729,12 +869,16 @@ namespace ScadaQTNN
             for (int i = 0; i < wellCount; i++)
                 Wells[i] = new WellStatus();
 
-            plc = new PlcService("192.168.1.9");
+            plc = new PlcService("192.168.1.15");
 
             if (plc.Connect())
             {
-                timer1.Interval = 250;
-                timer1.Enabled = true;
+                _pollingService = new PollingService(TimeSpan.FromMilliseconds(250), async token =>
+                {
+                    await ReadAndProcessOnceAsync(token).ConfigureAwait(false);
+                });
+                _pollingService.Start();
+
             }
             waterPanels = new Panel[]
             {

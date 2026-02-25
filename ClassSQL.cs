@@ -1,13 +1,7 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using S7.Net;
-using S7.Net.Types;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace ScadaQTNN
 {
@@ -26,41 +20,75 @@ namespace ScadaQTNN
 
             return builder.ConnectionString;
         }
-        // ===== INSERT / UPDATE / DELETE =====
+
+        // Sync versions (giữ để tương thích)
         public static void ExecuteNonQuery(string query, params SqlParameter[] parameters)
         {
-            using (SqlConnection conn = new SqlConnection(GetConnectionString()))
+            using (var conn = new SqlConnection(GetConnectionString()))
             {
                 conn.Open();
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (var cmd = new SqlCommand(query, conn))
                 {
-                    cmd.CommandTimeout = 3;
-                    if (parameters != null)
+                    cmd.CommandTimeout = 5;
+                    if (parameters != null && parameters.Length > 0)
                         cmd.Parameters.AddRange(parameters);
-
                     cmd.ExecuteNonQuery();
                 }
             }
         }
 
-        // ===== SELECT trả về DataTable =====
         public static DataTable ExecuteQuery(string query, params SqlParameter[] parameters)
         {
-            using (SqlConnection conn = new SqlConnection(GetConnectionString()))
+            using (var conn = new SqlConnection(GetConnectionString()))
             {
                 conn.Open();
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (var cmd = new SqlCommand(query, conn))
                 {
-                    cmd.CommandTimeout = 3;
-                    if (parameters != null)
+                    cmd.CommandTimeout = 5;
+                    if (parameters != null && parameters.Length > 0)
+                        cmd.Parameters.AddRange(parameters);
+                    using (var da = new SqlDataAdapter(cmd))
+                    {
+                        var dt = new DataTable();
+                        da.Fill(dt);
+                        return dt;
+                    }
+                }
+            }
+        }
+
+        // Async versions - compatible với C# 7.3 / .NET Framework
+        public static async Task<int> ExecuteNonQueryAsync(string query, params SqlParameter[] parameters)
+        {
+            using (var conn = new SqlConnection(GetConnectionString()))
+            {
+                await conn.OpenAsync().ConfigureAwait(false);
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.CommandTimeout = 5;
+                    if (parameters != null && parameters.Length > 0)
+                        cmd.Parameters.AddRange(parameters);
+                    return await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                }
+            }
+        }
+
+        public static async Task<DataTable> ExecuteQueryAsync(string query, params SqlParameter[] parameters)
+        {
+            using (var conn = new SqlConnection(GetConnectionString()))
+            {
+                await conn.OpenAsync().ConfigureAwait(false);
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.CommandTimeout = 5;
+                    if (parameters != null && parameters.Length > 0)
                         cmd.Parameters.AddRange(parameters);
 
-                    using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                    // SqlDataAdapter.Fill không có API async — chạy trong Task.Run để tránh block thread gọi
+                    using (var da = new SqlDataAdapter(cmd))
                     {
-                        DataTable dt = new DataTable();
-                        da.Fill(dt);
+                        var dt = new DataTable();
+                        await Task.Run(() => da.Fill(dt)).ConfigureAwait(false);
                         return dt;
                     }
                 }
@@ -68,5 +96,3 @@ namespace ScadaQTNN
         }
     }
 }
-
-

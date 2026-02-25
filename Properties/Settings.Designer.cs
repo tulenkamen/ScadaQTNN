@@ -25,7 +25,7 @@ namespace ScadaQTNN.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("DKC-PC\\WINCC")]
+        [global::System.Configuration.DefaultSettingValueAttribute("DESKTOP-T3UE4UI\\SQLEXPRESS")]
         public string Server {
             get {
                 return ((string)(this["Server"]));

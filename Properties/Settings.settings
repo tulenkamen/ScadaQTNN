@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="Server" Type="System.String" Scope="User">
-      <Value Profile="(Default)">DKC-PC\WINCC</Value>
+      <Value Profile="(Default)">DESKTOP-T3UE4UI\SQLEXPRESS</Value>
     </Setting>
     <Setting Name="Database" Type="System.String" Scope="User">
       <Value Profile="(Default)">SCADA_DB</Value>

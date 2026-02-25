@@ -415,18 +415,18 @@ namespace ScadaQTNN
             this.standardControl60 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl62 = new SymbolFactoryDotNet.StandardControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.tabIcons = new System.Windows.Forms.ImageList(this.components);
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.panel35 = new System.Windows.Forms.Panel();
+            this.label107 = new System.Windows.Forms.Label();
             this.panel33 = new System.Windows.Forms.Panel();
             this.button56 = new System.Windows.Forms.Button();
             this.label106 = new System.Windows.Forms.Label();
             this.button57 = new System.Windows.Forms.Button();
             this.panel34 = new System.Windows.Forms.Panel();
-            this.panel35 = new System.Windows.Forms.Panel();
-            this.label107 = new System.Windows.Forms.Label();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.tabIcons = new System.Windows.Forms.ImageList(this.components);
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.mainTabPanel.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.panel17.SuspendLayout();
@@ -564,10 +564,10 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl60)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl62)).BeginInit();
             this.tabPage2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.panel35.SuspendLayout();
             this.panel33.SuspendLayout();
             this.panel34.SuspendLayout();
-            this.panel35.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // mainTabPanel
@@ -6599,31 +6599,27 @@ namespace ScadaQTNN
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "LOGS";
             // 
-            // tabIcons
+            // panel35
             // 
-            this.tabIcons.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("tabIcons.ImageStream")));
-            this.tabIcons.TransparentColor = System.Drawing.Color.Transparent;
-            this.tabIcons.Images.SetKeyName(0, "02.Tab_1Home.ico");
-            this.tabIcons.Images.SetKeyName(1, "02.Tab_2Setting.ico");
-            this.tabIcons.Images.SetKeyName(2, "02.Tab_3Trend.ico");
-            this.tabIcons.Images.SetKeyName(3, "02.Tab_4Warning.ico");
-            this.tabIcons.Images.SetKeyName(4, "02.Tab_5Logging.ico");
+            this.panel35.BackColor = System.Drawing.Color.Silver;
+            this.panel35.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel35.Controls.Add(this.label107);
+            this.panel35.Location = new System.Drawing.Point(8, 4);
+            this.panel35.Name = "panel35";
+            this.panel35.Size = new System.Drawing.Size(1882, 69);
+            this.panel35.TabIndex = 129;
             // 
-            // timer1
+            // label107
             // 
-            this.timer1.Interval = 250;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // dataGridView1
-            // 
-            this.dataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(34, 14);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(1746, 671);
-            this.dataGridView1.TabIndex = 0;
-            this.dataGridView1.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellDoubleClick_1);
+            this.label107.AutoSize = true;
+            this.label107.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label107.ForeColor = System.Drawing.Color.Navy;
+            this.label107.Location = new System.Drawing.Point(562, 5);
+            this.label107.Name = "label107";
+            this.label107.Size = new System.Drawing.Size(848, 58);
+            this.label107.TabIndex = 1;
+            this.label107.Text = "HỆ THỐNG QUAN TRẮC KHAI THÁC NƯỚC NGẦM NHÀ MÁY NÚI TIÊN\r\nBẢNG LỊCH SỬ LỖI";
+            this.label107.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // panel33
             // 
@@ -6694,27 +6690,31 @@ namespace ScadaQTNN
             this.panel34.Size = new System.Drawing.Size(1880, 688);
             this.panel34.TabIndex = 128;
             // 
-            // panel35
+            // dataGridView1
             // 
-            this.panel35.BackColor = System.Drawing.Color.Silver;
-            this.panel35.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel35.Controls.Add(this.label107);
-            this.panel35.Location = new System.Drawing.Point(8, 4);
-            this.panel35.Name = "panel35";
-            this.panel35.Size = new System.Drawing.Size(1882, 69);
-            this.panel35.TabIndex = 129;
+            this.dataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridView1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Location = new System.Drawing.Point(34, 14);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.Size = new System.Drawing.Size(1746, 671);
+            this.dataGridView1.TabIndex = 0;
+            this.dataGridView1.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellDoubleClick_1);
             // 
-            // label107
+            // tabIcons
             // 
-            this.label107.AutoSize = true;
-            this.label107.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label107.ForeColor = System.Drawing.Color.Navy;
-            this.label107.Location = new System.Drawing.Point(562, 5);
-            this.label107.Name = "label107";
-            this.label107.Size = new System.Drawing.Size(848, 58);
-            this.label107.TabIndex = 1;
-            this.label107.Text = "HỆ THỐNG QUAN TRẮC KHAI THÁC NƯỚC NGẦM NHÀ MÁY NÚI TIÊN\r\nBẢNG LỊCH SỬ LỖI";
-            this.label107.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.tabIcons.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("tabIcons.ImageStream")));
+            this.tabIcons.TransparentColor = System.Drawing.Color.Transparent;
+            this.tabIcons.Images.SetKeyName(0, "02.Tab_1Home.ico");
+            this.tabIcons.Images.SetKeyName(1, "02.Tab_2Setting.ico");
+            this.tabIcons.Images.SetKeyName(2, "02.Tab_3Trend.ico");
+            this.tabIcons.Images.SetKeyName(3, "02.Tab_4Warning.ico");
+            this.tabIcons.Images.SetKeyName(4, "02.Tab_5Logging.ico");
+            // 
+            // timer1
+            // 
+            this.timer1.Interval = 250;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // Form1
             // 
@@ -6894,12 +6894,12 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl60)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl62)).EndInit();
             this.tabPage2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.panel35.ResumeLayout(false);
+            this.panel35.PerformLayout();
             this.panel33.ResumeLayout(false);
             this.panel33.PerformLayout();
             this.panel34.ResumeLayout(false);
-            this.panel35.ResumeLayout(false);
-            this.panel35.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
 
         }
