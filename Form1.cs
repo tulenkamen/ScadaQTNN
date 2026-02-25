@@ -65,7 +65,7 @@ namespace ScadaQTNN
 
         private PollingService _pollingService;
         private CancellationTokenSource _readLoopCts;
-
+        private readonly object _wellsLock = new object();
 
         private void ShowErrorOnce(string message)
         {
@@ -688,38 +688,64 @@ namespace ScadaQTNN
         #region SQL_CONNECT
 
         // Chèn vào Form1.cs (private method)
-        private async Task ReadAndProcessOnceAsync(CancellationToken token)
+        // 2) Thay thế ReadAndProcessOnceAsync bằng (thay cho method hiện có)
+        private async Task ReadAndProcessOnceAsync(System.Threading.CancellationToken token)
         {
             try
             {
                 if (isEditting) return; // nếu đang edit thì không đọc/ghi
-                                        // 1) Đọc PLC (có thể tốn thời gian)
-                plc.ReadWells(Wells); // đọc mảng Wells (nếu thư viện S7.Net hỗ trợ async, chuyển sang async)
 
+                // 1) Đọc PLC vào mảng local (tránh ghi trực tiếp vào shared Wells)
+                var localWells = new WellStatus[Wells.Length];
+                for (int i = 0; i < localWells.Length; i++)
+                    localWells[i] = new WellStatus();
+
+                plc.ReadWells(localWells);
+
+                // 2) Đọc db5 (remote bytes + tank + comm)
                 byte[] db5 = plc.ReadDBRange(5, 296, 336);
                 if (db5 == null || db5.Length == 0) return;
 
-                // Xử lý buffer → tạo một snapshot (chỉ chứa dữ liệu cần để update UI)
+                // 3) Parse remote bytes → set IsRemoteFlag (giống logic trong timer1_Tick)
+                int remoteStart = 322 - 296; // = 26
+                int remoteLength = 336 - 322; // = 14
+                if (db5.Length >= remoteStart + remoteLength)
+                {
+                    // remote bytes layout: pairs of bytes per well (same as trong timer1_Tick)
+                    for (int i = 0; i < Math.Min(7, localWells.Length); i++)
+                    {
+                        int byteIndex = remoteStart + i * 2;
+                        ushort val = (ushort)((db5[byteIndex] << 8) | db5[byteIndex + 1]);
+                        localWells[i].IsRemoteFlag = val != 0;
+                    }
+                }
+
+                // 4) Snapshot gồm wells copy + db5
                 var snapshot = new
                 {
-                    WellsCopy = CloneWellStatuses(Wells), // tạo shallow copy để an toàn (xem helper bên dưới)
-                    Db5 = (byte[])db5.Clone() // nếu muốn phân tích thêm
+                    WellsCopy = localWells,
+                    Db5 = (byte[])db5.Clone()
                 };
 
-                // 2) Xử lý lỗi & ghi cảnh báo vào DB (nên gọi async)
-                // Ví dụ: nếu phát hiện inverterFault mới → InsertWellAlarm (dùng ExecuteNonQueryAsync)
-                // Thực hiện thao tác DB trong background (không update UI trực tiếp ở đây)
+                // 5) Xử lý alarm/ghi DB (chạy ở background)
                 await UpdateAlarmsAsync(snapshot).ConfigureAwait(false);
 
-                // 3) Sau khi xử lý, cập nhật UI 1 lần (sử dụng BeginInvoke)
+                // 6) Cập nhật UI / shared Wells trên UI thread
                 this.BeginInvoke((Action)(() =>
                 {
+                    // Cập nhật shared Wells để các code khác tham chiếu (trên UI thread)
+                    lock (_wellsLock)
+                    {
+                        Wells = CloneWellStatuses(snapshot.WellsCopy);
+                    }
+
+                    // Cập nhật UI (mình sẽ gọi ApplySnapshotToUI - bạn có thể mở rộng nội dung để match timer1_Tick)
                     ApplySnapshotToUI(snapshot);
                 }));
             }
+            catch (OperationCanceledException) { /* normal */ }
             catch (Exception ex)
             {
-                // Các lỗi không nên ném lên UI; ghi log và hiển thị lỗi giới hạn
                 this.BeginInvoke((Action)(() => ShowErrorOnce(ex.Message)));
             }
         }
@@ -749,23 +775,26 @@ namespace ScadaQTNN
             return arr;
         }
 
+        // 3) Thay thế UpdateAlarmsAsync để parse commByte từ snapshot.Db5
         private async Task UpdateAlarmsAsync(object snapshotObj)
         {
-            // snapshotObj là dạng anonymous trên; cast nếu cần
-            // Ở đây mình chỉ minh họa: kiểm tra và chèn alarm nếu cần
             dynamic snapshot = snapshotObj;
             WellStatus[] wellsCopy = snapshot.WellsCopy;
+            byte[] db5 = snapshot.Db5 as byte[] ?? new byte[0];
 
-            // Tạo list các insert tasks để chạy tuần tự hoặc hàng loạt
+            // parse commByte if present
+            byte commByte = 0;
+            int offset316 = 316 - 296;
+            if (db5.Length > offset316) commByte = db5[offset316];
+
             for (int i = 0; i < wellsCopy.Length; i++)
             {
                 ushort currentError = wellsCopy[i].ErrorCode;
                 bool inverterFault = currentError != 0 && wellsCopy[i].RunMode >= 2;
-                bool commFault = false; // cần đọc từ db5 tương tự như trước (bạn có thể parse)
+                bool commFault = (commByte & (1 << (i + 1))) != 0; // same logic as timer1_Tick
 
                 if (inverterFault && !wellFaultState[i])
                 {
-                    // InsertWellAlarm trước đây chạy sync — thay bằng ExecuteNonQueryAsync
                     string sql = @"
                 INSERT INTO dbo.Well_Alarm (WellId, ErrorCode, ErrorTime, Description, IsHandled)
                 VALUES (@WellId, @ErrorCode, @ErrorTime, @Description, 0)";
@@ -776,28 +805,132 @@ namespace ScadaQTNN
                         new SqlParameter("@Description", GetFaultText(currentError))
                     ).ConfigureAwait(false);
 
-                    // đánh dấu local để tránh insert trùng trong cùng 1 phiên
                     wellFaultState[i] = true;
                     lastErrorCode[i] = currentError;
                 }
+                else if (inverterFault && wellFaultState[i] && currentError != lastErrorCode[i])
+                {
+                    string sql = @"
+                INSERT INTO dbo.Well_Alarm (WellId, ErrorCode, ErrorTime, Description, IsHandled)
+                VALUES (@WellId, @ErrorCode, @ErrorTime, @Description, 0)";
+                    await ClassSQL.ExecuteNonQueryAsync(sql,
+                        new SqlParameter("@WellId", i + 1),
+                        new SqlParameter("@ErrorCode", (int)currentError),
+                        new SqlParameter("@ErrorTime", DateTime.Now),
+                        new SqlParameter("@Description", GetFaultText(currentError))
+                    ).ConfigureAwait(false);
 
-                // Tương tự xử lý commFault...
+                    lastErrorCode[i] = currentError;
+                }
+
+                if (commFault && !wellCommState[i])
+                {
+                    // insert comm alarm
+                    string sql = @"
+                INSERT INTO dbo.Well_Alarm (WellId, ErrorCode, ErrorTime, Description, IsHandled)
+                VALUES (@WellId, @ErrorCode, @ErrorTime, @Description, 0)";
+                    await ClassSQL.ExecuteNonQueryAsync(sql,
+                        new SqlParameter("@WellId", i + 1),
+                        new SqlParameter("@ErrorCode", 0x0F01),
+                        new SqlParameter("@ErrorTime", DateTime.Now),
+                        new SqlParameter("@Description", GetFaultText(0x0F01))
+                    ).ConfigureAwait(false);
+                    wellCommState[i] = true;
+                }
+
+                // update local states
+                wellFaultState[i] = inverterFault;
+                wellCommState[i] = commFault;
             }
 
-            // Sau khi thay đổi dữ liệu DB, ta cần reload alarm grid nhưng LoadAlarmGrid() hiện sync.
-            // Vì DataGridView chỉ update trên UI thread, ta sẽ gọi LoadAlarmGrid() qua BeginInvoke từ Form UI
+            // reload grid on UI thread
             this.BeginInvoke((Action)(() => LoadAlarmGrid()));
         }
 
         private void ApplySnapshotToUI(dynamic snapshot)
         {
             WellStatus[] wellsCopy = snapshot.WellsCopy;
+            byte[] db5 = snapshot?.Db5 as byte[] ?? new byte[0];
+            if (wellsCopy.Length > 0)
+            {
+                // Hiển thị tần số giếng 1 (nếu control tồn tại)
+                try
+                {
+                    // Cập nhật tank/freq/status tương tự như code cũ nhưng dùng wellsCopy
+                    // Ví dụ cập nhật một số controls:
 
-            // Cập nhật tank/freq/status tương tự như code cũ nhưng dùng wellsCopy
-            // Ví dụ cập nhật một số controls:
+                    // ==== Hiển thị GIẾNG 8 ====
+                    ShowPlcControlMode(comboBox38, wellsCopy[0].RunModeText);
             textBox37.Text = wellsCopy[0].Frequency.ToString("0.0");
             ShowPlcControlMode(comboBox39, wellsCopy[0].ControlModeText);
-            // ... tiếp tục cho các control khác ...
+            textBox42.Text = wellsCopy[0].WaterLevel.ToString("0.00");
+            textBox41.Text = wellsCopy[0].Flow.ToString("0.00");
+            textBox40.Text = wellsCopy[0].TotalFlow.ToString("0.0");
+            textBox49.Text = $"{wellsCopy[0].Flow:0.00} m3/h";
+            textBox50.Text = $"{wellsCopy[0].WaterLevel:0.00} m";
+
+            // ==== Hiển thị GIẾNG 2 ====
+            ShowPlcControlMode(comboBox5, wellsCopy[1].RunModeText);
+            textBox4.Text = wellsCopy[1].Frequency.ToString("0.0");
+            ShowPlcControlMode(comboBox6, wellsCopy[1].ControlModeText);
+            textBox1.Text = wellsCopy[1].WaterLevel.ToString("0.00");
+            textBox2.Text = wellsCopy[1].Flow.ToString("0.00");
+            textBox3.Text = wellsCopy[1].TotalFlow.ToString("0.0");
+            textBox57.Text = $"{wellsCopy[1].Flow:0.00} m3/h";
+            textBox58.Text = $"{wellsCopy[1].WaterLevel:0.00} m";
+
+            // ==== Hiển thị GIẾNG 3 ====
+            ShowPlcControlMode(comboBox8, wellsCopy[2].RunModeText);
+            textBox7.Text = wellsCopy[2].Frequency.ToString("0.0");
+            ShowPlcControlMode(comboBox9, wellsCopy[2].ControlModeText);
+            textBox12.Text = wellsCopy[2].WaterLevel.ToString("0.00");
+            textBox11.Text = wellsCopy[2].Flow.ToString("0.00");
+            textBox10.Text = wellsCopy[2].TotalFlow.ToString("0.0");
+            textBox59.Text = $"{wellsCopy[2].Flow:0.00} m3/h";
+            textBox60.Text = $"{wellsCopy[2].WaterLevel:0.00} m";
+
+            // ==== Hiển thị GIẾNG 4 ====
+            ShowPlcControlMode(comboBox14, wellsCopy[3].RunModeText);
+            textBox13.Text = wellsCopy[3].Frequency.ToString("0.0");
+            ShowPlcControlMode(comboBox15, wellsCopy[3].ControlModeText);
+            textBox18.Text = wellsCopy[3].WaterLevel.ToString("0.00");
+            textBox17.Text = wellsCopy[3].Flow.ToString("0.00");
+            textBox16.Text = wellsCopy[3].TotalFlow.ToString("0.0");
+            textBox61.Text = $"{wellsCopy[3].Flow:0.00} m3/h";
+            textBox62.Text = $"{wellsCopy[3].WaterLevel:0.00} m";
+
+            // ==== Hiển thị GIẾNG 5 ====
+            ShowPlcControlMode(comboBox20, wellsCopy[4].RunModeText);
+            textBox19.Text = wellsCopy[4].Frequency.ToString("0.0");
+            ShowPlcControlMode(comboBox21, wellsCopy[4].ControlModeText);
+            textBox24.Text = wellsCopy[4].WaterLevel.ToString("0.00");
+            textBox23.Text = wellsCopy[4].Flow.ToString("0.00");
+            textBox22.Text = wellsCopy[4].TotalFlow.ToString("0.0");
+            textBox55.Text = $"{wellsCopy[4].Flow:0.00} m3/h";
+            textBox56.Text = $"{wellsCopy[4].WaterLevel:0.00} m";
+
+            // ==== Hiển thị GIẾNG 6 ====
+            ShowPlcControlMode(comboBox26, wellsCopy[5].RunModeText);
+            textBox25.Text = wellsCopy[5].Frequency.ToString("0.0");
+            ShowPlcControlMode(comboBox27, wellsCopy[5].ControlModeText);
+            textBox30.Text = wellsCopy[5].WaterLevel.ToString("0.00");
+            textBox29.Text = wellsCopy[5].Flow.ToString("0.00");
+            textBox28.Text = wellsCopy[5].TotalFlow.ToString("0.0");
+            textBox53.Text = $"{wellsCopy[5].Flow:0.00} m3/h";
+            textBox54.Text = $"{wellsCopy[5].WaterLevel:0.00} m";
+
+            // ==== Hiển thị GIẾNG 7 ====
+            ShowPlcControlMode(comboBox32, wellsCopy[6].RunModeText);
+            textBox31.Text = wellsCopy[6].Frequency.ToString("0.0");
+            ShowPlcControlMode(comboBox33, wellsCopy[6].ControlModeText);
+            textBox36.Text = wellsCopy[6].WaterLevel.ToString("0.00");
+            textBox35.Text = wellsCopy[6].Flow.ToString("0.00");
+            textBox34.Text = wellsCopy[6].TotalFlow.ToString("0.0");
+            textBox52.Text = $"{wellsCopy[6].Flow:0.00} m3/h";
+            textBox51.Text = $"{wellsCopy[6].WaterLevel:0.00} m";
+                }
+                catch { /* nếu control không tồn tại, bỏ qua */ }
+            }
             // Cập nhật water panels:
             for (int i = 0; i < wellsCopy.Length && i < waterPanels.Length; i++)
             {
@@ -873,11 +1006,12 @@ namespace ScadaQTNN
 
             if (plc.Connect())
             {
-                _pollingService = new PollingService(TimeSpan.FromMilliseconds(250), async token =>
-                {
-                    await ReadAndProcessOnceAsync(token).ConfigureAwait(false);
-                });
-                _pollingService.Start();
+                // Sử dụng timer designer (giữ logic UI lớn trong timer1_Tick)
+                timer1.Interval = 250;
+                timer1.Enabled = true;
+
+                // Nếu có _pollingService đã tạo, dừng/hủy nó:
+                _pollingService?.Stop();
 
             }
             waterPanels = new Panel[]
