@@ -67,6 +67,12 @@ namespace ScadaQTNN
         private CancellationTokenSource _readLoopCts;
         private readonly object _wellsLock = new object();
 
+        // Thêm vào phần biến toàn cục của Form1
+        private bool _alarmGridInitialized = false;
+        private int _lastAlarmMaxId = -1;
+        private readonly TimeSpan _alarmGridMinInterval = TimeSpan.FromSeconds(2); // throttle
+        private DateTime _lastAlarmGridUpdate = DateTime.MinValue;
+
         private void ShowErrorOnce(string message)
         {
             if (_errorShowing) return;
@@ -348,8 +354,8 @@ namespace ScadaQTNN
 
         private string GetFaultText(ushort code)
         {
-            Console.WriteLine($"ErrorCode DEC: {code}");
-            Console.WriteLine($"ErrorCode HEX: 0x{code:X4}");
+            Logger.Info($"ErrorCode DEC: {code}");
+            Logger.Info($"ErrorCode HEX: 0x{code:X4}");
 
             if (FaultMap.ContainsKey(code))
                 return FaultMap[code];
@@ -374,6 +380,8 @@ namespace ScadaQTNN
             dataGridView1.EnableHeadersVisualStyles = false;
 
             dataGridView1.RowTemplate.Height = 28;
+            dataGridView1.RowPrePaint -= DataGridView1_RowPrePaint; // tránh subscribe nhiều lần
+            dataGridView1.RowPrePaint += DataGridView1_RowPrePaint;
         }
         private Dictionary<int, string> wellNameMap = new Dictionary<int, string>
 {
@@ -392,26 +400,28 @@ namespace ScadaQTNN
             try
             {
                 string query = @"
-        SELECT 
-            Id,
-            ErrorTime,
-            WellId,
-            ErrorCode,
-            Description,
-            IsHandled
-        FROM dbo.Well_Alarm
-        ORDER BY ErrorTime DESC";
+            SELECT 
+                Id,
+                ErrorTime,
+                WellId,
+                ErrorCode,
+                Description,
+                IsHandled
+            FROM dbo.Well_Alarm
+            ORDER BY ErrorTime DESC";
 
                 DataTable dt = ClassSQL.ExecuteQuery(query);
+                if (dt == null) return;
 
-                // ==========================
-                // 🔥 MAP WELL ID → WELL NAME
-                // ==========================
-                dt.Columns.Add("WellName", typeof(string));
+                // Map WellId -> WellName
+                if (!dt.Columns.Contains("WellName"))
+                    dt.Columns.Add("WellName", typeof(string));
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    int id = Convert.ToInt32(row["WellId"]);
+                    int id = 0;
+                    if (row["WellId"] != DBNull.Value)
+                        int.TryParse(row["WellId"].ToString(), out id);
 
                     if (wellNameMap.ContainsKey(id))
                         row["WellName"] = wellNameMap[id];
@@ -419,44 +429,102 @@ namespace ScadaQTNN
                         row["WellName"] = "Unknown";
                 }
 
-                dt.Columns.Remove("WellId");          // bỏ cột id cũ
-                dt.Columns["WellName"].SetOrdinal(2); // đưa về vị trí thứ 3
+                // Remove original WellId column if present (safe check)
+                if (dt.Columns.Contains("WellId"))
+                    dt.Columns.Remove("WellId");
 
-                alarmSource.DataSource = dt;
-                dataGridView1.DataSource = alarmSource;
-
-
-                // ==========================
-                // 🔥 CẤU HÌNH GRID
-                // ==========================
-
-                dataGridView1.Columns["Id"].HeaderText = "ID";
-                dataGridView1.Columns["ErrorTime"].HeaderText = "Thời gian";
-                dataGridView1.Columns["WellName"].HeaderText = "Tên trạm";
-                dataGridView1.Columns["ErrorCode"].HeaderText = "Mã lỗi";
-                dataGridView1.Columns["Description"].HeaderText = "Mô tả";
-                dataGridView1.Columns["IsHandled"].HeaderText = "Đã xử lý";
-
-                // Thanh cuộn
-                dataGridView1.ScrollBars = ScrollBars.Vertical;
-
-                // Tô màu trạng thái
-                foreach (DataGridViewRow row in dataGridView1.Rows)
+                // Ensure WellName in correct position if column exists
+                if (dt.Columns.Contains("WellName"))
                 {
-                    bool handled = Convert.ToBoolean(row.Cells["IsHandled"].Value);
-
-                    if (!handled)
-                        row.DefaultCellStyle.BackColor = Color.MistyRose;   // chưa xử lý
-                    else
-                        row.DefaultCellStyle.BackColor = Color.Honeydew;    // đã xử lý
+                    try
+                    {
+                        dt.Columns["WellName"].SetOrdinal(2);
+                    }
+                    catch
+                    {
+                        // ignore if cannot set ordinal
+                    }
                 }
+
+                // Bind the data (use ResetBindings to ensure UI update)
+                alarmSource.DataSource = dt;
+                alarmSource.ResetBindings(false);
+
+                // Assign DataSource to grid (if not already)
+                if (dataGridView1.DataSource != alarmSource)
+                    dataGridView1.DataSource = alarmSource;
+
+                // ==========================
+                // Cấu hình cột *nếu tồn tại* — không gây exception nếu cột chưa được tạo
+                // ==========================
+                if (dataGridView1.Columns.Contains("Id"))
+                {
+                    dataGridView1.Columns["Id"].HeaderText = "ID";
+                    dataGridView1.Columns["Id"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+                    dataGridView1.Columns["Id"].Width = 50;
+                }
+
+                if (dataGridView1.Columns.Contains("ErrorTime"))
+                {
+                    dataGridView1.Columns["ErrorTime"].HeaderText = "Thời gian";
+                    dataGridView1.Columns["ErrorTime"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                }
+
+                if (dataGridView1.Columns.Contains("WellName"))
+                {
+                    dataGridView1.Columns["WellName"].HeaderText = "Tên trạm";
+                    dataGridView1.Columns["WellName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+                }
+
+                if (dataGridView1.Columns.Contains("ErrorCode"))
+                {
+                    dataGridView1.Columns["ErrorCode"].HeaderText = "Mã lỗi";
+                    dataGridView1.Columns["ErrorCode"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+                    dataGridView1.Columns["ErrorCode"].Width = 80;
+                }
+
+                if (dataGridView1.Columns.Contains("Description"))
+                {
+                    dataGridView1.Columns["Description"].HeaderText = "Mô tả";
+                    dataGridView1.Columns["Description"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    dataGridView1.Columns["Description"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                }
+
+                if (dataGridView1.Columns.Contains("IsHandled"))
+                {
+                    dataGridView1.Columns["IsHandled"].HeaderText = "Đã xử lý";
+                    dataGridView1.Columns["IsHandled"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+                    dataGridView1.Columns["IsHandled"].Width = 80;
+                }
+
+                // Không lặp qua tất cả rows ở đây; RowPrePaint sẽ tô màu khi cần
+                dataGridView1.Refresh();
             }
             catch (Exception ex)
             {
-                ShowErrorOnce(ex.Message);
+                Logger.Error(ex, "LoadAlarmGrid");
+                this.BeginInvoke((Action)(() => ShowErrorOnce(ex.Message)));
             }
         }
+        private void DataGridView1_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
+        {
+            try
+            {
+                var row = dataGridView1.Rows[e.RowIndex];
+                if (row.IsNewRow) return;
 
+                var cell = row.Cells["IsHandled"];
+                bool handled = false;
+                if (cell != null && cell.Value != null && cell.Value != DBNull.Value)
+                    bool.TryParse(cell.Value.ToString(), out handled);
+
+                row.DefaultCellStyle.BackColor = handled ? Color.Honeydew : Color.MistyRose;
+            }
+            catch
+            {
+                // im lặng nếu có exception format; tránh làm crash UI
+            }
+        }
         private void MarkAlarmHandled(int alarmId)
         {
             foreach (DataGridViewRow row in dataGridView1.Rows)
@@ -634,19 +702,19 @@ namespace ScadaQTNN
                     wells[i].TankVoltage = PlcConvert.ToFloat(buffer, o + 28);
                     wells[i].ErrorCode = PlcConvert.ToUInt16(buffer, o + 32);
 
-                    Console.WriteLine($"===== WELL {i + 1} =====");
-                    Console.WriteLine($"RunMode        : {wells[i].RunMode}");
-                    Console.WriteLine($"Frequency      : {wells[i].Frequency}");
-                    Console.WriteLine($"ControlMode    : {wells[i].ControlMode}");
-                    Console.WriteLine($"BitCheck       : {wells[i].BitCheck}");
-                    Console.WriteLine($"WaterLevel     : {wells[i].WaterLevel}");
-                    Console.WriteLine($"Flow           : {wells[i].Flow}");
-                    Console.WriteLine($"TotalFlow      : {wells[i].TotalFlow}");
-                    Console.WriteLine($"TankFloatLevel : {wells[i].TankFloatLevel}");
-                    Console.WriteLine($"TankCurrent    : {wells[i].TankCurrent}");
-                    Console.WriteLine($"TankVoltage    : {wells[i].TankVoltage}");
-                    Console.WriteLine($"ErrorCode      : {wells[i].ErrorCode}");
-                    Console.WriteLine();
+                    Logger.Info($"===== WELL {i + 1} =====");
+                    Logger.Info($"RunMode        : {wells[i].RunMode}");
+                    Logger.Info($"Frequency      : {wells[i].Frequency}");
+                    Logger.Info($"ControlMode    : {wells[i].ControlMode}");
+                    Logger.Info($"BitCheck       : {wells[i].BitCheck}");
+                    Logger.Info($"WaterLevel     : {wells[i].WaterLevel}");
+                    Logger.Info($"Flow           : {wells[i].Flow}");
+                    Logger.Info($"TotalFlow      : {wells[i].TotalFlow}");
+                    Logger.Info($"TankFloatLevel : {wells[i].TankFloatLevel}");
+                    Logger.Info($"TankCurrent    : {wells[i].TankCurrent}");
+                    Logger.Info($"TankVoltage    : {wells[i].TankVoltage}");
+                    Logger.Info($"ErrorCode      : {wells[i].ErrorCode}");
+                    Logger.Info("");
 
                 }
 
@@ -778,169 +846,456 @@ namespace ScadaQTNN
         // 3) Thay thế UpdateAlarmsAsync để parse commByte từ snapshot.Db5
         private async Task UpdateAlarmsAsync(object snapshotObj)
         {
-            dynamic snapshot = snapshotObj;
-            WellStatus[] wellsCopy = snapshot.WellsCopy;
-            byte[] db5 = snapshot.Db5 as byte[] ?? new byte[0];
-
-            // parse commByte if present
-            byte commByte = 0;
-            int offset316 = 316 - 296;
-            if (db5.Length > offset316) commByte = db5[offset316];
-
-            for (int i = 0; i < wellsCopy.Length; i++)
+            try
             {
-                ushort currentError = wellsCopy[i].ErrorCode;
-                bool inverterFault = currentError != 0 && wellsCopy[i].RunMode >= 2;
-                bool commFault = (commByte & (1 << (i + 1))) != 0; // same logic as timer1_Tick
+                dynamic snapshot = snapshotObj;
+                WellStatus[] wellsCopy = snapshot.WellsCopy;
+                byte[] db5 = snapshot.Db5 as byte[] ?? new byte[0];
 
-                if (inverterFault && !wellFaultState[i])
+                // parse commByte if present
+                byte commByte = 0;
+                int offset316 = 316 - 296;
+                if (db5.Length > offset316) commByte = db5[offset316];
+
+                // Prepare list of inserts to perform AFTER we exit any locks (avoid await inside lock)
+                var jobs = new List<(int wellIndex, int errorCode, string description, DateTime time)>();
+
+                // 1) Decide which alarms need inserting (fast, no awaits). Read prior state under lock.
+                for (int i = 0; i < wellsCopy.Length; i++)
                 {
-                    string sql = @"
-                INSERT INTO dbo.Well_Alarm (WellId, ErrorCode, ErrorTime, Description, IsHandled)
-                VALUES (@WellId, @ErrorCode, @ErrorTime, @Description, 0)";
-                    await ClassSQL.ExecuteNonQueryAsync(sql,
-                        new SqlParameter("@WellId", i + 1),
-                        new SqlParameter("@ErrorCode", (int)currentError),
-                        new SqlParameter("@ErrorTime", DateTime.Now),
-                        new SqlParameter("@Description", GetFaultText(currentError))
-                    ).ConfigureAwait(false);
+                    ushort currentError = wellsCopy[i].ErrorCode;
+                    bool inverterFault = currentError != 0 && wellsCopy[i].RunMode >= 2;
+                    bool commFault = (commByte & (1 << (i + 1))) != 0;
 
-                    wellFaultState[i] = true;
-                    lastErrorCode[i] = currentError;
+                    bool prevFault, prevComm;
+                    ushort prevError;
+
+                    lock (_wellsLock)
+                    {
+                        prevFault = wellFaultState[i];
+                        prevComm = wellCommState[i];
+                        prevError = lastErrorCode[i];
+                    }
+
+                    // inverter fault: new fault or changed error code while already faulted
+                    if (inverterFault && !prevFault)
+                    {
+                        jobs.Add((i, (int)currentError, GetFaultText(currentError), DateTime.Now));
+                    }
+                    else if (inverterFault && prevFault && currentError != prevError)
+                    {
+                        jobs.Add((i, (int)currentError, GetFaultText(currentError), DateTime.Now));
+                    }
+
+                    // comm fault: rising edge (was false, now true)
+                    if (commFault && !prevComm)
+                    {
+                        const int COMM_ERROR_CODE = 0x0F01;
+                        jobs.Add((i, COMM_ERROR_CODE, GetFaultText(COMM_ERROR_CODE), DateTime.Now));
+                    }
+
+                    // Note: we DO NOT update wellFaultState / lastErrorCode / wellCommState here,
+                    // only after successful insert(s) below.
                 }
-                else if (inverterFault && wellFaultState[i] && currentError != lastErrorCode[i])
+
+                // 2) Execute insert jobs sequentially (or parallel if desired). Update shared state under lock after each insert.
+                foreach (var job in jobs)
                 {
-                    string sql = @"
-                INSERT INTO dbo.Well_Alarm (WellId, ErrorCode, ErrorTime, Description, IsHandled)
-                VALUES (@WellId, @ErrorCode, @ErrorTime, @Description, 0)";
-                    await ClassSQL.ExecuteNonQueryAsync(sql,
-                        new SqlParameter("@WellId", i + 1),
-                        new SqlParameter("@ErrorCode", (int)currentError),
-                        new SqlParameter("@ErrorTime", DateTime.Now),
-                        new SqlParameter("@Description", GetFaultText(currentError))
-                    ).ConfigureAwait(false);
+                    try
+                    {
+                        string sql = @"
+    INSERT INTO dbo.Well_Alarm (WellId, ErrorCode, ErrorTime, Description, IsHandled)
+    VALUES (@WellId, @ErrorCode, @ErrorTime, @Description, 0)";
 
-                    lastErrorCode[i] = currentError;
+                        await ClassSQL.ExecuteNonQueryAsync(sql,
+                            new SqlParameter("@WellId", job.wellIndex + 1),
+                            new SqlParameter("@ErrorCode", job.errorCode),
+                            new SqlParameter("@ErrorTime", job.time),
+                            new SqlParameter("@Description", job.description)
+                        ).ConfigureAwait(false);
+
+                        // after successful insert, update in-memory state under lock
+                        lock (_wellsLock)
+                        {
+                            // if it's a comm error code (0x0F01) update comm state
+                            if (job.errorCode == 0x0F01)
+                            {
+                                wellCommState[job.wellIndex] = true;
+                            }
+                            else
+                            {
+                                // inverter error: set fault true and lastErrorCode
+                                wellFaultState[job.wellIndex] = true;
+                                lastErrorCode[job.wellIndex] = (ushort)job.errorCode;
+                            }
+                        }
+
+                        Logger.Info($"Inserted alarm for well {job.wellIndex + 1} code 0x{job.errorCode:X4}");
+                    }
+                    catch (Exception exJob)
+                    {
+                        // log and continue with next job
+                        Logger.Error(exJob, $"Insert alarm failed for well {job.wellIndex + 1} code 0x{job.errorCode:X4}");
+                    }
                 }
 
-                if (commFault && !wellCommState[i])
+                // 3) Make sure we keep in-memory states consistent with the latest snapshot for wells that have no jobs:
+                //    (If you want to reflect cleared faults/comm lost, update arrays from wellsCopy)
+                lock (_wellsLock)
                 {
-                    // insert comm alarm
-                    string sql = @"
-                INSERT INTO dbo.Well_Alarm (WellId, ErrorCode, ErrorTime, Description, IsHandled)
-                VALUES (@WellId, @ErrorCode, @ErrorTime, @Description, 0)";
-                    await ClassSQL.ExecuteNonQueryAsync(sql,
-                        new SqlParameter("@WellId", i + 1),
-                        new SqlParameter("@ErrorCode", 0x0F01),
-                        new SqlParameter("@ErrorTime", DateTime.Now),
-                        new SqlParameter("@Description", GetFaultText(0x0F01))
-                    ).ConfigureAwait(false);
-                    wellCommState[i] = true;
+                    for (int i = 0; i < wellsCopy.Length; i++)
+                    {
+                        // keep comm state as previously set, but allow clearing if snapshot shows no comm fault
+                        bool commFaultNow = (commByte & (1 << (i + 1))) != 0;
+                        wellCommState[i] = commFaultNow;
+
+                        // update inverter fault state to current snapshot (so clearing is reflected)
+                        ushort currentError = wellsCopy[i].ErrorCode;
+                        bool inverterFaultNow = currentError != 0 && wellsCopy[i].RunMode >= 2;
+                        wellFaultState[i] = inverterFaultNow;
+
+                        if (!inverterFaultNow)
+                        {
+                            lastErrorCode[i] = 0;
+                        }
+                        else
+                        {
+                            lastErrorCode[i] = wellsCopy[i].ErrorCode;
+                        }
+                    }
                 }
 
-                // update local states
-                wellFaultState[i] = inverterFault;
-                wellCommState[i] = commFault;
+                // 4) reload grid on UI thread (only once)
+                this.BeginInvoke((Action)(() => LoadAlarmGrid()));
             }
-
-            // reload grid on UI thread
-            this.BeginInvoke((Action)(() => LoadAlarmGrid()));
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "UpdateAlarmsAsync");
+                // don't rethrow - we want polling to continue
+            }
         }
 
         private void ApplySnapshotToUI(dynamic snapshot)
         {
-            WellStatus[] wellsCopy = snapshot.WellsCopy;
-            byte[] db5 = snapshot?.Db5 as byte[] ?? new byte[0];
-            if (wellsCopy.Length > 0)
+            try
             {
-                // Hiển thị tần số giếng 1 (nếu control tồn tại)
-                try
+                var localWells = (WellStatus[])snapshot.WellsCopy ?? new WellStatus[0];
+                byte[] db5 = (byte[])snapshot.Db5 ?? new byte[0];
+
+                // Cập nhật shared Wells an toàn (clone)
+                lock (_wellsLock)
                 {
-                    // Cập nhật tank/freq/status tương tự như code cũ nhưng dùng wellsCopy
-                    // Ví dụ cập nhật một số controls:
-
-                    // ==== Hiển thị GIẾNG 8 ====
-                    ShowPlcControlMode(comboBox38, wellsCopy[0].RunModeText);
-            textBox37.Text = wellsCopy[0].Frequency.ToString("0.0");
-            ShowPlcControlMode(comboBox39, wellsCopy[0].ControlModeText);
-            textBox42.Text = wellsCopy[0].WaterLevel.ToString("0.00");
-            textBox41.Text = wellsCopy[0].Flow.ToString("0.00");
-            textBox40.Text = wellsCopy[0].TotalFlow.ToString("0.0");
-            textBox49.Text = $"{wellsCopy[0].Flow:0.00} m3/h";
-            textBox50.Text = $"{wellsCopy[0].WaterLevel:0.00} m";
-
-            // ==== Hiển thị GIẾNG 2 ====
-            ShowPlcControlMode(comboBox5, wellsCopy[1].RunModeText);
-            textBox4.Text = wellsCopy[1].Frequency.ToString("0.0");
-            ShowPlcControlMode(comboBox6, wellsCopy[1].ControlModeText);
-            textBox1.Text = wellsCopy[1].WaterLevel.ToString("0.00");
-            textBox2.Text = wellsCopy[1].Flow.ToString("0.00");
-            textBox3.Text = wellsCopy[1].TotalFlow.ToString("0.0");
-            textBox57.Text = $"{wellsCopy[1].Flow:0.00} m3/h";
-            textBox58.Text = $"{wellsCopy[1].WaterLevel:0.00} m";
-
-            // ==== Hiển thị GIẾNG 3 ====
-            ShowPlcControlMode(comboBox8, wellsCopy[2].RunModeText);
-            textBox7.Text = wellsCopy[2].Frequency.ToString("0.0");
-            ShowPlcControlMode(comboBox9, wellsCopy[2].ControlModeText);
-            textBox12.Text = wellsCopy[2].WaterLevel.ToString("0.00");
-            textBox11.Text = wellsCopy[2].Flow.ToString("0.00");
-            textBox10.Text = wellsCopy[2].TotalFlow.ToString("0.0");
-            textBox59.Text = $"{wellsCopy[2].Flow:0.00} m3/h";
-            textBox60.Text = $"{wellsCopy[2].WaterLevel:0.00} m";
-
-            // ==== Hiển thị GIẾNG 4 ====
-            ShowPlcControlMode(comboBox14, wellsCopy[3].RunModeText);
-            textBox13.Text = wellsCopy[3].Frequency.ToString("0.0");
-            ShowPlcControlMode(comboBox15, wellsCopy[3].ControlModeText);
-            textBox18.Text = wellsCopy[3].WaterLevel.ToString("0.00");
-            textBox17.Text = wellsCopy[3].Flow.ToString("0.00");
-            textBox16.Text = wellsCopy[3].TotalFlow.ToString("0.0");
-            textBox61.Text = $"{wellsCopy[3].Flow:0.00} m3/h";
-            textBox62.Text = $"{wellsCopy[3].WaterLevel:0.00} m";
-
-            // ==== Hiển thị GIẾNG 5 ====
-            ShowPlcControlMode(comboBox20, wellsCopy[4].RunModeText);
-            textBox19.Text = wellsCopy[4].Frequency.ToString("0.0");
-            ShowPlcControlMode(comboBox21, wellsCopy[4].ControlModeText);
-            textBox24.Text = wellsCopy[4].WaterLevel.ToString("0.00");
-            textBox23.Text = wellsCopy[4].Flow.ToString("0.00");
-            textBox22.Text = wellsCopy[4].TotalFlow.ToString("0.0");
-            textBox55.Text = $"{wellsCopy[4].Flow:0.00} m3/h";
-            textBox56.Text = $"{wellsCopy[4].WaterLevel:0.00} m";
-
-            // ==== Hiển thị GIẾNG 6 ====
-            ShowPlcControlMode(comboBox26, wellsCopy[5].RunModeText);
-            textBox25.Text = wellsCopy[5].Frequency.ToString("0.0");
-            ShowPlcControlMode(comboBox27, wellsCopy[5].ControlModeText);
-            textBox30.Text = wellsCopy[5].WaterLevel.ToString("0.00");
-            textBox29.Text = wellsCopy[5].Flow.ToString("0.00");
-            textBox28.Text = wellsCopy[5].TotalFlow.ToString("0.0");
-            textBox53.Text = $"{wellsCopy[5].Flow:0.00} m3/h";
-            textBox54.Text = $"{wellsCopy[5].WaterLevel:0.00} m";
-
-            // ==== Hiển thị GIẾNG 7 ====
-            ShowPlcControlMode(comboBox32, wellsCopy[6].RunModeText);
-            textBox31.Text = wellsCopy[6].Frequency.ToString("0.0");
-            ShowPlcControlMode(comboBox33, wellsCopy[6].ControlModeText);
-            textBox36.Text = wellsCopy[6].WaterLevel.ToString("0.00");
-            textBox35.Text = wellsCopy[6].Flow.ToString("0.00");
-            textBox34.Text = wellsCopy[6].TotalFlow.ToString("0.0");
-            textBox52.Text = $"{wellsCopy[6].Flow:0.00} m3/h";
-            textBox51.Text = $"{wellsCopy[6].WaterLevel:0.00} m";
+                    Wells = CloneWellStatuses(localWells);
                 }
-                catch { /* nếu control không tồn tại, bỏ qua */ }
-            }
-            // Cập nhật water panels:
-            for (int i = 0; i < wellsCopy.Length && i < waterPanels.Length; i++)
-            {
-                UpdateWaterLevel(waterPanels[i], wellsCopy[i].WaterLevel, MaxWaterLevels[i]);
-            }
 
-            // Cập nhật các multipeState — chúng đã có check "if unchanged => return" nên không quá tốn
-            multipeState(standardControl63, (byte)wellsCopy[0].RunMode);
-            // ... các multipeState kh��c ...
-            UpdateAllSymbols(); // nếu vẫn cần
+                // --- parse remote bytes (offsets same as original)
+                int remoteStart = 322 - 296;
+                int remoteLength = 336 - 322;
+                byte[] remoteBytes = new byte[remoteLength];
+                if (db5.Length >= remoteStart + remoteLength)
+                    Array.Copy(db5, remoteStart, remoteBytes, 0, remoteLength);
+
+                for (int i = 0; i < Math.Min(localWells.Length, 7); i++)
+                {
+                    int byteIndex = i * 2;
+                    if (remoteBytes.Length > byteIndex + 1)
+                    {
+                        ushort val = (ushort)((remoteBytes[byteIndex] << 8) | remoteBytes[byteIndex + 1]);
+                        localWells[i].IsRemoteFlag = val != 0;
+                    }
+                }
+
+                // --- parse tank bytes
+                int tankStart = 296 - 296; // = 0
+                int tankLength = 314 - 296; // = 18
+                byte[] bufTank = new byte[tankLength];
+                if (db5.Length >= tankStart + tankLength)
+                    Array.Copy(db5, tankStart, bufTank, 0, tankLength);
+                else
+                    bufTank = new byte[0];
+
+                bool interLockRemoteG12 = false;
+                if (db5.Length > (314 - 296))
+                    interLockRemoteG12 = (db5[314 - 296] & (1 << 7)) != 0;
+
+                int offset318 = 318 - 296;
+                bool ffStatus = false, van1 = false, van2 = false, bomTankTG = false;
+                if (db5.Length > offset318)
+                {
+                    ffStatus = (db5[offset318] & (1 << 0)) != 0;
+                    van1 = (db5[offset318] & (1 << 1)) != 0;
+                    van2 = (db5[offset318] & (1 << 2)) != 0;
+                    bomTankTG = (db5[offset318] & (1 << 3)) != 0;
+                }
+
+                // Nếu bufTank hợp lệ, parse các trường (giữ nguyên logic cũ)
+                short statusOnT1 = 0, statusOnT2 = 0;
+                float freq1 = 0f, freq2 = 0f;
+                if (bufTank != null && bufTank.Length >= tankLength)
+                {
+                    statusOnT1 = (short)((bufTank[0] << 8) | bufTank[1]);
+                    statusOnT2 = (short)((bufTank[2] << 8) | bufTank[3]);
+                    freq1 = PlcConvert.ToFloat(bufTank, 4);
+                    freq2 = PlcConvert.ToFloat(bufTank, 8);
+                    mode = (short)((bufTank[12] << 8) | bufTank[13]);
+                }
+
+                // ========== BẮT ĐẦU CẬP NHẬT UI ==========
+
+                // Tank / interlock buttons
+                button27.Visible = interLockRemoteG12;
+                button24.Visible = !interLockRemoteG12;
+                button25.Visible = true;
+                button22.Visible = true;
+
+                switch (mode)
+                {
+                    case 0:
+                        textBox45.Text = "MANUAL";
+                        textBox46.Text = "MANUAL";
+                        button26.Visible = false;
+                        button23.Visible = false;
+                        break;
+                    case 1:
+                        textBox45.Text = "AUTO";
+                        textBox46.Text = "AUTO";
+                        button26.Visible = interLockRemoteG12;
+                        button23.Visible = interLockRemoteG12;
+                        break;
+                    case 2:
+                        textBox45.Text = "MANUAL";
+                        textBox46.Text = "AUTO";
+                        button26.Visible = interLockRemoteG12;
+                        button23.Visible = false;
+                        break;
+                    case 3:
+                        textBox45.Text = "AUTO";
+                        textBox46.Text = "MANUAL";
+                        button26.Visible = false;
+                        button23.Visible = interLockRemoteG12;
+                        break;
+                    default:
+                        textBox45.Text = "MANUAL";
+                        textBox46.Text = "MANUAL";
+                        button26.Visible = false;
+                        button23.Visible = false;
+                        break;
+                }
+
+                textBox43.Text = freq1.ToString("0.0");
+                textBox44.Text = freq2.ToString("0.0");
+                comboBox1.Text = ParseStatus(statusOnT1);
+                comboBox3.Text = ParseStatus(statusOnT2);
+                currentstatusOnT1 = (ushort)statusOnT1;
+                currentstatusOnT2 = (ushort)statusOnT2;
+
+                // Update tank level / flags
+                if (localWells.Length > 1)
+                {
+                    int level = localWells[1].TankFloatLevel;
+                    UpdateWaterLevel2(panel29, level); UpdateWaterLevel2(panel30, level);
+                    UpdateWaterLevelBool(panel31, ffStatus); UpdateWaterLevelBool(panel32, ffStatus);
+
+                    if (level != _lastLevel)
+                    {
+                        label80.Visible = false; label81.Visible = false; label82.Visible = false;
+                        switch (level)
+                        {
+                            case 3: label80.Visible = true; break;
+                            case 2: label81.Visible = true; break;
+                            case 1:
+                            case 0: label82.Visible = true; break;
+                        }
+                        _lastLevel = level;
+                    }
+                    label91.Visible = ffStatus;
+                    label92.Visible = !ffStatus;
+                }
+
+                // Update per-well water panels
+                for (int i = 0; i < localWells.Length && i < waterPanels.Length; i++)
+                {
+                    UpdateWaterLevel(waterPanels[i], localWells[i].WaterLevel, MaxWaterLevels[i]);
+                }
+
+                // ===== HIỂN THỊ CHI TIẾT CHO TỪNG GIẾNG (dùng localWells[..]) =====
+                if (localWells.Length >= 7)
+                {
+                    // GIẾNG 1 (index 0)
+                    ShowPlcControlMode(comboBox38, localWells[0].RunModeText);
+                    textBox37.Text = localWells[0].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox39, localWells[0].ControlModeText);
+                    textBox42.Text = localWells[0].WaterLevel.ToString("0.00");
+                    textBox41.Text = localWells[0].Flow.ToString("0.00");
+                    textBox40.Text = localWells[0].TotalFlow.ToString("0.0");
+                    textBox49.Text = $"{localWells[0].Flow:0.00} m3/h";
+                    textBox50.Text = $"{localWells[0].WaterLevel:0.00} m";
+
+                    // GIẾNG 2 (index 1)
+                    ShowPlcControlMode(comboBox5, localWells[1].RunModeText);
+                    textBox4.Text = localWells[1].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox6, localWells[1].ControlModeText);
+                    textBox1.Text = localWells[1].WaterLevel.ToString("0.00");
+                    textBox2.Text = localWells[1].Flow.ToString("0.00");
+                    textBox3.Text = localWells[1].TotalFlow.ToString("0.0");
+                    textBox57.Text = $"{localWells[1].Flow:0.00} m3/h";
+                    textBox58.Text = $"{localWells[1].WaterLevel:0.00} m";
+
+                    // GIẾNG 3 (index 2)
+                    ShowPlcControlMode(comboBox8, localWells[2].RunModeText);
+                    textBox7.Text = localWells[2].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox9, localWells[2].ControlModeText);
+                    textBox12.Text = localWells[2].WaterLevel.ToString("0.00");
+                    textBox11.Text = localWells[2].Flow.ToString("0.00");
+                    textBox10.Text = localWells[2].TotalFlow.ToString("0.0");
+                    textBox59.Text = $"{localWells[2].Flow:0.00} m3/h";
+                    textBox60.Text = $"{localWells[2].WaterLevel:0.00} m";
+
+                    // GIẾNG 4 (index 3)
+                    ShowPlcControlMode(comboBox14, localWells[3].RunModeText);
+                    textBox13.Text = localWells[3].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox15, localWells[3].ControlModeText);
+                    textBox18.Text = localWells[3].WaterLevel.ToString("0.00");
+                    textBox17.Text = localWells[3].Flow.ToString("0.00");
+                    textBox16.Text = localWells[3].TotalFlow.ToString("0.0");
+                    textBox61.Text = $"{localWells[3].Flow:0.00} m3/h";
+                    textBox62.Text = $"{localWells[3].WaterLevel:0.00} m";
+
+                    // GIẾNG 5 (index 4)
+                    ShowPlcControlMode(comboBox20, localWells[4].RunModeText);
+                    textBox19.Text = localWells[4].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox21, localWells[4].ControlModeText);
+                    textBox24.Text = localWells[4].WaterLevel.ToString("0.00");
+                    textBox23.Text = localWells[4].Flow.ToString("0.00");
+                    textBox22.Text = localWells[4].TotalFlow.ToString("0.0");
+                    textBox55.Text = $"{localWells[4].Flow:0.00} m3/h";
+                    textBox56.Text = $"{localWells[4].WaterLevel:0.00} m";
+
+                    // GIẾNG 6 (index 5)
+                    ShowPlcControlMode(comboBox26, localWells[5].RunModeText);
+                    textBox25.Text = localWells[5].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox27, localWells[5].ControlModeText);
+                    textBox30.Text = localWells[5].WaterLevel.ToString("0.00");
+                    textBox29.Text = localWells[5].Flow.ToString("0.00");
+                    textBox28.Text = localWells[5].TotalFlow.ToString("0.0");
+                    textBox53.Text = $"{localWells[5].Flow:0.00} m3/h";
+                    textBox54.Text = $"{localWells[5].WaterLevel:0.00} m";
+
+                    // GIẾNG 7 (index 6)
+                    ShowPlcControlMode(comboBox32, localWells[6].RunModeText);
+                    textBox31.Text = localWells[6].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox33, localWells[6].ControlModeText);
+                    textBox36.Text = localWells[6].WaterLevel.ToString("0.00");
+                    textBox35.Text = localWells[6].Flow.ToString("0.00");
+                    textBox34.Text = localWells[6].TotalFlow.ToString("0.0");
+                    textBox52.Text = $"{localWells[6].Flow:0.00} m3/h";
+                    textBox51.Text = $"{localWells[6].WaterLevel:0.00} m";
+                }
+
+                // ===== NÚT CHỨC NĂNG VÀ VISIBLE =====
+                if (localWells.Length >= 7)
+                {
+                    button20.Visible = localWells[0].IsEditable;
+                    button2.Visible = localWells[1].IsEditable;
+                    button5.Visible = localWells[2].IsEditable;
+                    button8.Visible = localWells[3].IsEditable;
+                    button11.Visible = localWells[4].IsEditable;
+                    button14.Visible = localWells[5].IsEditable;
+                    button17.Visible = localWells[6].IsEditable;
+
+                    button21.Visible = localWells[0].ControlMode == 1;
+                    button19.Visible = localWells[0].ControlMode == 1;
+
+                    button1.Visible = localWells[1].ControlMode == 1;
+                    button3.Visible = localWells[1].ControlMode == 1;
+
+                    button6.Visible = localWells[2].ControlMode == 1;
+                    button4.Visible = localWells[2].ControlMode == 1;
+
+                    button9.Visible = localWells[3].ControlMode == 1;
+                    button7.Visible = localWells[3].ControlMode == 1;
+
+                    button12.Visible = localWells[4].ControlMode == 1;
+                    button10.Visible = localWells[4].ControlMode == 1;
+
+                    button15.Visible = localWells[5].ControlMode == 1;
+                    button13.Visible = localWells[5].ControlMode == 1;
+
+                    button18.Visible = localWells[6].ControlMode == 1;
+                    button16.Visible = localWells[6].ControlMode == 1;
+                }
+
+                // ===== multipeState updates (the same sequence as original code, using localWells) =====
+                if (localWells.Length > 0)
+                {
+                    // GIENG 1
+                    multipeState(standardControl63, (byte)localWells[0].RunMode);
+                    multipeState(standardControl59, (byte)localWells[0].RunMode);
+                    multipeState(standardControl54, (byte)localWells[0].RunMode);
+                    multipeState(standardControl58, (byte)localWells[0].RunMode);
+                    multipeState(standardControl60, (byte)localWells[0].RunMode);
+                    multipeState(standardControl62, (byte)localWells[0].RunMode);
+
+                    // GIENG 2
+                    multipeState(standardControl57, (byte)localWells[1].RunMode);
+                    multipeState(standardControl15, (byte)localWells[1].RunMode);
+                    multipeState(standardControl6, (byte)localWells[1].RunMode);
+                    multipeState(standardControl12, (byte)localWells[1].RunMode);
+                    multipeState(standardControl64, (byte)localWells[1].RunMode);
+                    multipeState(standardControl65, (byte)localWells[1].RunMode);
+                    multipeState(standardControl66, (byte)localWells[1].RunMode);
+
+                    // GIENG 3
+                    multipeState(standardControl10, (byte)localWells[2].RunMode);
+                    multipeState(standardControl18, (byte)localWells[2].RunMode);
+                    multipeState(standardControl13, (byte)localWells[2].RunMode);
+                    multipeState(standardControl17, (byte)localWells[2].RunMode);
+                    multipeState(standardControl9, (byte)localWells[2].RunMode);
+                    multipeState(standardControl8, (byte)localWells[2].RunMode);
+                    multipeState(standardControl4, (byte)localWells[2].RunMode);
+
+                    // GIENG 4
+                    multipeState(standardControl22, (byte)localWells[3].RunMode);
+                    multipeState(standardControl21, (byte)localWells[3].RunMode);
+                    multipeState(standardControl19, (byte)localWells[3].RunMode);
+                    multipeState(standardControl20, (byte)localWells[3].RunMode);
+                    multipeState(standardControl27, (byte)localWells[3].RunMode);
+                    multipeState(standardControl24, (byte)localWells[3].RunMode);
+
+                    // GIENG 5
+                    multipeState(standardControl32, (byte)localWells[4].RunMode);
+                    multipeState(standardControl30, (byte)localWells[4].RunMode);
+                    multipeState(standardControl28, (byte)localWells[4].RunMode);
+                    multipeState(standardControl29, (byte)localWells[4].RunMode);
+                    multipeState(standardControl31, (byte)localWells[4].RunMode);
+
+                    // GIENG 6
+                    multipeState(standardControl42, (byte)localWells[5].RunMode);
+                    multipeState(standardControl41, (byte)localWells[5].RunMode);
+                    multipeState(standardControl39, (byte)localWells[5].RunMode);
+                    multipeState(standardControl40, (byte)localWells[5].RunMode);
+                    multipeState(standardControl84, (byte)localWells[5].RunMode);
+                    multipeState(standardControl83, (byte)localWells[5].RunMode);
+                    multipeState(standardControl38, (byte)localWells[5].RunMode);
+
+                    // GIENG 7
+                    multipeState(standardControl52, (byte)localWells[6].RunMode);
+                    multipeState(standardControl48, (byte)localWells[6].RunMode);
+                    multipeState(standardControl44, (byte)localWells[6].RunMode);
+                    multipeState(standardControl47, (byte)localWells[6].RunMode);
+                    multipeState(standardControl50, (byte)localWells[6].RunMode);
+                    multipeState(standardControl49, (byte)localWells[6].RunMode);
+                    multipeState(standardControl51, (byte)localWells[6].RunMode);
+                }
+
+                // Update symbol graphics and any other UI glue
+                UpdateAllSymbols();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "ApplySnapshotToUI");
+                ShowErrorOnce(ex.Message);
+            }
         }
 
         public void InsertHistory(int wellId, double freq, double flow, double level)
@@ -1107,491 +1462,35 @@ namespace ScadaQTNN
             SetupAlarmGrid();
             LoadAlarmGrid();
         }
-        private void timer1_Tick(object sender, EventArgs e)
+        private async void timer1_Tick(object sender, EventArgs e)
         {
             if (_isReading) return;
             _isReading = true;
-                try
-                {
-                if (isEditting == false)
-                {
-                    plc.ReadWells(Wells);
-                    byte[] db5 = plc.ReadDBRange(5, 296, 336);
-                    //Remote Byte
-                    int remoteStart = 322 - 296; // = 26
-                    int remoteLength = 336 - 322; // = 14 byte
+            try
+            {
+                if (_readLoopCts == null)
+                    _readLoopCts = new CancellationTokenSource();
 
-                    byte[] remoteBytes = new byte[remoteLength];
-                    Array.Copy(db5, remoteStart, remoteBytes, 0, remoteLength);
-                    //Tank Byte
-                    int tankStart = 296 - 296; // = 0
-                    int tankLength = 314 - 296; // = 18 byte
-
-                    byte[] bufTank = new byte[tankLength];
-                    Array.Copy(db5, tankStart, bufTank, 0, tankLength);
-
-                    bool interLockRemoteG12 = (db5[314 - 296] & (1 << 7)) != 0;
-
-                    int offset318 = 318 - 296;
-                    bool ffStatus = (db5[offset318] & (1 << 0)) != 0;
-                    bool van1 = (db5[offset318] & (1 << 1)) != 0;
-                    bool van2 = (db5[offset318] & (1 << 2)) != 0;
-                    bool bomTankTG = (db5[offset318] & (1 << 3)) != 0;
-                    for (int i = 0; i < 7; i++)
-                    {
-                        int byteIndex = i * 2;
-                        ushort val = (ushort)((remoteBytes[byteIndex] << 8) | remoteBytes[byteIndex + 1]);
-                        Wells[i].IsRemoteFlag = val != 0; // 1 = REMOTE, 0 = AUTO
-                    }
-
-                    #region Capnhat_LoiSQL
-
-                    int offset316 = 316 - 296;
-                    byte commByte = db5[offset316];
-
-                    for (int i = 0; i < Wells.Length; i++)
-                    {
-                        ushort currentError = Wells[i].ErrorCode;
-                        bool inverterFault = currentError != 0 && Wells[i].RunMode >= 2;
-
-                        bool commFault = (commByte & (1 << (i + 1))) != 0;
-
-                        // =============================
-                        // 1️⃣ LỖI BIẾN TẦN
-                        // =============================
-
-                        if (inverterFault && !wellFaultState[i])
-                        {
-                            InsertWellAlarm(i + 1, currentError);
-                            LoadAlarmGrid();
-                        }
-
-                        if (inverterFault && wellFaultState[i] &&
-                            currentError != lastErrorCode[i])
-                        {
-                            InsertWellAlarm(i + 1, currentError);
-                            LoadAlarmGrid();
-                        }
-
-                        wellFaultState[i] = inverterFault;
-                        lastErrorCode[i] = currentError;
-
-                        // =============================
-                        // 2️⃣ LỖI TRUYỀN THÔNG
-                        // =============================
-
-                        if (commFault && !wellCommState[i])
-                        {
-                            InsertWellAlarm(i + 1, 0x0F01);
-                            LoadAlarmGrid();
-                        }
-
-                        wellCommState[i] = commFault;
-                        Console.WriteLine($"Ki {i}      : {commFault}, {wellCommState[i]}");
-
-                    }
-
-                    #endregion
-
-
-
-                    #region hienthi_trangthai_tanso_tank
-                    if (bufTank == null || bufTank.Length < 18)
-                        return;
-                    // ---- INT ----
-                    short statusOnT1 = (short)((bufTank[0] << 8) | bufTank[1]);   // 296-297
-                    short statusOnT2 = (short)((bufTank[2] << 8) | bufTank[3]);   // 297-298
-                    // ---- REAL ----
-                    float freq1 = PlcConvert.ToFloat(bufTank, 4);   // 300-303
-                    float freq2 = PlcConvert.ToFloat(bufTank, 8);   // 304-307
-                    // ---- MODE INT ----
-                    mode = (short)((bufTank[12] << 8) | bufTank[13]); // 308-309
-                    button27.Visible = interLockRemoteG12;
-                    button24.Visible = !interLockRemoteG12;
-                    button25.Visible = true;
-                    button22.Visible = true;
-                    switch (mode)
-                    {
-                        case 0:
-                            textBox45.Text = "MANUAL";
-                            textBox46.Text = "MANUAL";
-                            if (interLockRemoteG12 == true)
-                            {
-                                button26.Visible = false;
-                                button23.Visible = false;
-                            }
-                            else
-                            {
-                                button26.Visible = false;
-                                button23.Visible = false;
-                            }
-                            break;
-
-                        case 1:
-                            textBox45.Text = "AUTO";
-                            textBox46.Text = "AUTO";
-                            if (interLockRemoteG12 == true)
-                            {
-                                button26.Visible = true;
-                                button23.Visible = true;
-                            }
-                            else
-                            {
-                                button26.Visible = false;
-                                button23.Visible = false;
-                            }
-                            break;
-
-                        case 2:
-                            textBox45.Text = "MANUAL";
-                            textBox46.Text = "AUTO";
-                            if (interLockRemoteG12 == true)
-                            {
-                                button26.Visible = true;
-                                button23.Visible = false;
-                            }
-                            else
-                            {
-                                button26.Visible = false;
-                                button23.Visible = false;
-                            }
-                            break;
-
-                        case 3:
-                            textBox45.Text = "AUTO";
-                            textBox46.Text = "MANUAL";
-                            if (interLockRemoteG12 == true)
-                            {
-                                button26.Visible = false;
-                                button23.Visible = true;
-                            }
-                            else
-                            {
-                                button26.Visible = false;
-                                button23.Visible = false;
-                            }
-                            break;
-
-                        default:
-                            textBox45.Text = "MANUAL";
-                            textBox46.Text = "MANUAL";
-                            button26.Visible = false;
-                            button23.Visible = false;
-                            break;
-                    }
-                    textBox43.Text = freq1.ToString("0.0");
-                    textBox44.Text = freq2.ToString("0.0");
-                    comboBox1.Text = ParseStatus(statusOnT1);
-                    comboBox3.Text = ParseStatus(statusOnT2);
-                    currentstatusOnT1 = (ushort)statusOnT1;
-                    currentstatusOnT2 = (ushort)statusOnT2;
-                    #endregion
-                    #region hienthi_level_tank
-                    int level = Wells[1].TankFloatLevel;
-                    UpdateWaterLevel2(panel29, level); UpdateWaterLevel2(panel30, level);
-                    //Update trang thai nha may
-                    UpdateWaterLevelBool(panel31, ffStatus); UpdateWaterLevelBool(panel32, ffStatus);
-                    if (level != _lastLevel)
-                    {
-                        label80.Visible = false;
-                        label81.Visible = false;
-                        label82.Visible = false;
-
-                        switch (level)
-                        {
-                            case 3:
-                                label80.Visible = true;
-                                break;
-
-                            case 2:
-                                label81.Visible = true;
-                                break;
-
-                            case 1:
-                            case 0:
-                                label82.Visible = true;
-                                break;
-                        }
-
-                        _lastLevel = level;
-                    }
-                    label91.Visible = ffStatus;     // ff = 1 → hiện 91
-                    label92.Visible = !ffStatus;    // ff = 0 → hiện 92
-                    twoState(standardControl120, van1);
-                    twoState(standardControl121, van2);
-                    twoState(standardControl3, bomTankTG);
-                    //Hien Thi Trang thai Tank
-                    multipeState(standardControl96, (byte)statusOnT1);
-                    multipeState(standardControl101, (byte)statusOnT1);
-                    multipeState(standardControl98, (byte)statusOnT1);
-                    multipeState(standardControl61, (byte)statusOnT1);
-
-                    multipeState(standardControl97, (byte)statusOnT2);
-                    multipeState(standardControl99, (byte)statusOnT2);
-                    multipeState(standardControl100, (byte)statusOnT2);
-                    if (statusOnT1 == 1 || statusOnT2 == 1)
-                    {
-                        multipeState(standardControl102, 1);
-                        multipeState(standardControl94, 1);
-                        multipeState(standardControl103, 1);
-                        multipeState(standardControl110, 1);
-                        multipeState(standardControl111, 1);
-                        multipeState(standardControl118, 1);
-                        multipeState(standardControl119, 1);
-                        multipeState(standardControl113, 1);
-                        multipeState(standardControl114, 1);
-                    }
-                    else
-                    {
-                        multipeState(standardControl102, 0);
-                        multipeState(standardControl94, 0);
-                        multipeState(standardControl103, 0);
-                        multipeState(standardControl110, 0);
-                        multipeState(standardControl111, 0);
-                        multipeState(standardControl118, 0);
-                        multipeState(standardControl119, 0);
-                        multipeState(standardControl113, 0);
-                        multipeState(standardControl114, 0);
-                    }
-                    #endregion
-                    #region hienthi_button_chucnang
-                    button20.Visible = Wells[0].IsEditable;
-                    button2.Visible = Wells[1].IsEditable;
-                    button5.Visible = Wells[2].IsEditable;
-                    button8.Visible = Wells[3].IsEditable;
-                    button11.Visible = Wells[4].IsEditable;
-                    button14.Visible = Wells[5].IsEditable;
-                    button17.Visible = Wells[6].IsEditable;
-
-                    if (Wells[0].ControlMode == 1)
-                    {
-                        button21.Visible = true; 
-                        button19.Visible = true;
-
-                    }
-                    else
-                    {
-                        button21.Visible = false;
-                        button19.Visible = false;
-
-                    }
-                    if (Wells[1].ControlMode == 1)
-                    {
-                        button1.Visible = true;
-                        button3.Visible = true;
-                    }
-                    else
-                    {
-                        button1.Visible = false;
-                        button3.Visible = false;
-
-                    }
-                    if (Wells[2].ControlMode == 1)
-                    {
-                        button6.Visible = true;
-                        button4.Visible = true;
-
-                    }
-                    else
-                    {
-                        button6.Visible = false;
-                        button4.Visible = false;
-
-                    }
-                    if (Wells[3].ControlMode == 1)
-                    {
-                        button9.Visible = true;
-                        button7.Visible = true;
-
-                    }
-                    else
-                    {
-                        button9.Visible = false;
-                        button7.Visible = false;
-
-                    }
-                    if (Wells[4].ControlMode == 1)
-                    {
-                        button12.Visible = true;
-                        button10.Visible = true;
-
-                    }
-                    else
-                    {
-                        button12.Visible = false;
-                        button10.Visible = false;
-
-                    }
-                    if (Wells[5].ControlMode == 1)
-                    {
-                        button15.Visible = true;
-                        button13.Visible = true;
-
-                    }
-                    else
-                    {
-                        button15.Visible = false;
-                        button13.Visible = false;
-
-                    }
-                    if (Wells[6].ControlMode == 1)
-                    {
-                        button18.Visible = true;
-                        button16.Visible = true;
-
-                    }
-                    else
-                    {
-                        button18.Visible = false;
-                        button16.Visible = false;
-
-                    }
-                    #endregion
-                    #region hienthi_gieng
-                    // ==== Hiển thị GIẾNG 8 ====
-                    ShowPlcControlMode(comboBox38, Wells[0].RunModeText);
-                    textBox37.Text = Wells[0].Frequency.ToString("0.0");
-                    ShowPlcControlMode(comboBox39, Wells[0].ControlModeText);
-                    textBox42.Text = Wells[0].WaterLevel.ToString("0.00");
-                    textBox41.Text = Wells[0].Flow.ToString("0.00");
-                    textBox40.Text = Wells[0].TotalFlow.ToString("0.0");
-                    textBox49.Text = $"{Wells[0].Flow:0.00} m3/h";
-                    textBox50.Text = $"{Wells[0].WaterLevel:0.00} m";
-
-                    // ==== Hiển thị GIẾNG 2 ====
-                    ShowPlcControlMode(comboBox5, Wells[1].RunModeText);
-                    textBox4.Text = Wells[1].Frequency.ToString("0.0");
-                    ShowPlcControlMode(comboBox6, Wells[1].ControlModeText);
-                    textBox1.Text = Wells[1].WaterLevel.ToString("0.00");
-                    textBox2.Text = Wells[1].Flow.ToString("0.00");
-                    textBox3.Text = Wells[1].TotalFlow.ToString("0.0");
-                    textBox57.Text = $"{Wells[1].Flow:0.00} m3/h";
-                    textBox58.Text = $"{Wells[1].WaterLevel:0.00} m";
-
-                    // ==== Hiển thị GIẾNG 3 ====
-                    ShowPlcControlMode(comboBox8, Wells[2].RunModeText);
-                    textBox7.Text = Wells[2].Frequency.ToString("0.0");
-                    ShowPlcControlMode(comboBox9, Wells[2].ControlModeText);
-                    textBox12.Text = Wells[2].WaterLevel.ToString("0.00");
-                    textBox11.Text = Wells[2].Flow.ToString("0.00");
-                    textBox10.Text = Wells[2].TotalFlow.ToString("0.0");
-                    textBox59.Text = $"{Wells[2].Flow:0.00} m3/h";
-                    textBox60.Text = $"{Wells[2].WaterLevel:0.00} m";
-
-                    // ==== Hiển thị GIẾNG 4 ====
-                    ShowPlcControlMode(comboBox14, Wells[3].RunModeText);
-                    textBox13.Text = Wells[3].Frequency.ToString("0.0");
-                    ShowPlcControlMode(comboBox15, Wells[3].ControlModeText);
-                    textBox18.Text = Wells[3].WaterLevel.ToString("0.00");
-                    textBox17.Text = Wells[3].Flow.ToString("0.00");
-                    textBox16.Text = Wells[3].TotalFlow.ToString("0.0");
-                    textBox61.Text = $"{Wells[3].Flow:0.00} m3/h";
-                    textBox62.Text = $"{Wells[3].WaterLevel:0.00} m";
-
-                    // ==== Hiển thị GIẾNG 5 ====
-                    ShowPlcControlMode(comboBox20, Wells[4].RunModeText);
-                    textBox19.Text = Wells[4].Frequency.ToString("0.0");
-                    ShowPlcControlMode(comboBox21, Wells[4].ControlModeText);
-                    textBox24.Text = Wells[4].WaterLevel.ToString("0.00");
-                    textBox23.Text = Wells[4].Flow.ToString("0.00");
-                    textBox22.Text = Wells[4].TotalFlow.ToString("0.0");
-                    textBox55.Text = $"{Wells[4].Flow:0.00} m3/h";
-                    textBox56.Text = $"{Wells[4].WaterLevel:0.00} m";
-
-                    // ==== Hiển thị GIẾNG 6 ====
-                    ShowPlcControlMode(comboBox26, Wells[5].RunModeText);
-                    textBox25.Text = Wells[5].Frequency.ToString("0.0");
-                    ShowPlcControlMode(comboBox27, Wells[5].ControlModeText);
-                    textBox30.Text = Wells[5].WaterLevel.ToString("0.00");
-                    textBox29.Text = Wells[5].Flow.ToString("0.00");
-                    textBox28.Text = Wells[5].TotalFlow.ToString("0.0");
-                    textBox53.Text = $"{Wells[5].Flow:0.00} m3/h";
-                    textBox54.Text = $"{Wells[5].WaterLevel:0.00} m";
-
-                    // ==== Hiển thị GIẾNG 7 ====
-                    ShowPlcControlMode(comboBox32, Wells[6].RunModeText);
-                    textBox31.Text = Wells[6].Frequency.ToString("0.0");
-                    ShowPlcControlMode(comboBox33, Wells[6].ControlModeText);
-                    textBox36.Text = Wells[6].WaterLevel.ToString("0.00");
-                    textBox35.Text = Wells[6].Flow.ToString("0.00");
-                    textBox34.Text = Wells[6].TotalFlow.ToString("0.0");
-                    textBox52.Text = $"{Wells[6].Flow:0.00} m3/h";
-                    textBox51.Text = $"{Wells[6].WaterLevel:0.00} m";
-
-                    for (int i = 0; i < Wells.Length; i++)
-                    {
-                        UpdateWaterLevel(
-                            waterPanels[i],
-                            Wells[i].WaterLevel,
-                            MaxWaterLevels[i]
-                        );
-                    }
-                    //GIENG 08
-                    multipeState(standardControl63, (byte)Wells[0].RunMode);
-                    multipeState(standardControl59, (byte)Wells[0].RunMode);
-                    multipeState(standardControl54, (byte)Wells[0].RunMode);
-                    multipeState(standardControl58, (byte)Wells[0].RunMode);
-                    multipeState(standardControl60, (byte)Wells[0].RunMode);
-                    multipeState(standardControl62, (byte)Wells[0].RunMode);
-                    //Gieng 02
-                    multipeState(standardControl57, (byte)Wells[1].RunMode);
-                    multipeState(standardControl15, (byte)Wells[1].RunMode);
-                    multipeState(standardControl6, (byte)Wells[1].RunMode);
-                    multipeState(standardControl12, (byte)Wells[1].RunMode);
-                    multipeState(standardControl64, (byte)Wells[1].RunMode);
-                    multipeState(standardControl65, (byte)Wells[1].RunMode);
-                    multipeState(standardControl66, (byte)Wells[1].RunMode);
-                    //GIENG 03
-                    multipeState(standardControl10, (byte)Wells[2].RunMode);
-                    multipeState(standardControl18, (byte)Wells[2].RunMode);
-                    multipeState(standardControl13, (byte)Wells[2].RunMode);
-                    multipeState(standardControl17, (byte)Wells[2].RunMode);
-                    multipeState(standardControl9, (byte)Wells[2].RunMode);
-                    multipeState(standardControl8, (byte)Wells[2].RunMode);
-                    multipeState(standardControl4, (byte)Wells[2].RunMode);
-                    //GIENG 04
-                    multipeState(standardControl22, (byte)Wells[3].RunMode);
-                    multipeState(standardControl21, (byte)Wells[3].RunMode);
-                    multipeState(standardControl19, (byte)Wells[3].RunMode);
-                    multipeState(standardControl20, (byte)Wells[3].RunMode);
-                    multipeState(standardControl27, (byte)Wells[3].RunMode);
-                    multipeState(standardControl24, (byte)Wells[3].RunMode);
-                    //GIENG 05
-                    multipeState(standardControl32, (byte)Wells[4].RunMode);
-                    multipeState(standardControl30, (byte)Wells[4].RunMode);
-                    multipeState(standardControl28, (byte)Wells[4].RunMode);
-                    multipeState(standardControl29, (byte)Wells[4].RunMode);
-                    multipeState(standardControl31, (byte)Wells[4].RunMode);
-                    //GIENG 06
-                    multipeState(standardControl42, (byte)Wells[5].RunMode);
-                    multipeState(standardControl41, (byte)Wells[5].RunMode);
-                    multipeState(standardControl39, (byte)Wells[5].RunMode);
-                    multipeState(standardControl40, (byte)Wells[5].RunMode);
-                    multipeState(standardControl84, (byte)Wells[5].RunMode);
-                    multipeState(standardControl83, (byte)Wells[5].RunMode);
-                    multipeState(standardControl38, (byte)Wells[5].RunMode);
-                    //GIENG 07
-                    multipeState(standardControl52, (byte)Wells[6].RunMode);
-                    multipeState(standardControl48, (byte)Wells[6].RunMode);
-                    multipeState(standardControl44, (byte)Wells[6].RunMode);
-                    multipeState(standardControl47, (byte)Wells[6].RunMode);
-                    multipeState(standardControl50, (byte)Wells[6].RunMode);
-                    multipeState(standardControl49, (byte)Wells[6].RunMode);
-                    multipeState(standardControl51, (byte)Wells[6].RunMode);
-
-                    UpdateAllSymbols();
-                    #endregion
-                }
-                }
-                catch (Exception ex)
-                {
-                    ShowErrorOnce(ex.Message);
-                }
-                finally
-                {
+                // ReadAndProcessOnceAsync sẽ:
+                //  - đọc PLC vào local array
+                //  - đọc db5 và parse một số byte cần cho alarms
+                //  - gọi UpdateAlarmsAsync(...) (chạy ngoài UI thread)
+                //  - BeginInvoke lên UI thread để gán shared Wells và gọi ApplySnapshotToUI(snapshot)
+                await ReadAndProcessOnceAsync(_readLoopCts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Info("Read loop cancelled.");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "timer1_Tick");
+                this.BeginInvoke((Action)(() => ShowErrorOnce(ex.Message)));
+            }
+            finally
+            {
                 _isReading = false;
-                }
-
+            }
         }
 
         #region BUTTON_MAU_GIENG_2

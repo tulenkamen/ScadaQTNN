@@ -1,0 +1,486 @@
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (_isReading) return;
+            _isReading = true;
+                try
+                {
+                if (isEditting == false)
+                {
+                    plc.ReadWells(Wells);
+                    byte[] db5 = plc.ReadDBRange(5, 296, 336);
+                    //Remote Byte
+                    int remoteStart = 322 - 296; // = 26
+                    int remoteLength = 336 - 322; // = 14 byte
+
+                    byte[] remoteBytes = new byte[remoteLength];
+                    Array.Copy(db5, remoteStart, remoteBytes, 0, remoteLength);
+                    //Tank Byte
+                    int tankStart = 296 - 296; // = 0
+                    int tankLength = 314 - 296; // = 18 byte
+
+                    byte[] bufTank = new byte[tankLength];
+                    Array.Copy(db5, tankStart, bufTank, 0, tankLength);
+
+                    bool interLockRemoteG12 = (db5[314 - 296] & (1 << 7)) != 0;
+
+                    int offset318 = 318 - 296;
+                    bool ffStatus = (db5[offset318] & (1 << 0)) != 0;
+                    bool van1 = (db5[offset318] & (1 << 1)) != 0;
+                    bool van2 = (db5[offset318] & (1 << 2)) != 0;
+                    bool bomTankTG = (db5[offset318] & (1 << 3)) != 0;
+                    for (int i = 0; i < 7; i++)
+                    {
+                        int byteIndex = i * 2;
+                        ushort val = (ushort)((remoteBytes[byteIndex] << 8) | remoteBytes[byteIndex + 1]);
+                        Wells[i].IsRemoteFlag = val != 0; // 1 = REMOTE, 0 = AUTO
+                    }
+
+                    #region Capnhat_LoiSQL
+
+                    int offset316 = 316 - 296;
+                    byte commByte = db5[offset316];
+
+                    for (int i = 0; i < Wells.Length; i++)
+                    {
+                        ushort currentError = Wells[i].ErrorCode;
+                        bool inverterFault = currentError != 0 && Wells[i].RunMode >= 2;
+
+                        bool commFault = (commByte & (1 << (i + 1))) != 0;
+
+                        // =============================
+                        // 1️⃣ LỖI BIẾN TẦN
+                        // =============================
+
+                        if (inverterFault && !wellFaultState[i])
+                        {
+                            InsertWellAlarm(i + 1, currentError);
+                            LoadAlarmGrid();
+                        }
+
+                        if (inverterFault && wellFaultState[i] &&
+                            currentError != lastErrorCode[i])
+                        {
+                            InsertWellAlarm(i + 1, currentError);
+                            LoadAlarmGrid();
+                        }
+
+                        wellFaultState[i] = inverterFault;
+                        lastErrorCode[i] = currentError;
+
+                        // =============================
+                        // 2️⃣ LỖI TRUYỀN THÔNG
+                        // =============================
+
+                        if (commFault && !wellCommState[i])
+                        {
+                            InsertWellAlarm(i + 1, 0x0F01);
+                            LoadAlarmGrid();
+                        }
+
+                        wellCommState[i] = commFault;
+                        Logger.Info($"Ki {i}      : {commFault}, {wellCommState[i]}");
+
+                    }
+
+                    #endregion
+
+
+
+                    #region hienthi_trangthai_tanso_tank
+                    if (bufTank == null || bufTank.Length < 18)
+                        return;
+                    // ---- INT ----
+                    short statusOnT1 = (short)((bufTank[0] << 8) | bufTank[1]);   // 296-297
+                    short statusOnT2 = (short)((bufTank[2] << 8) | bufTank[3]);   // 297-298
+                    // ---- REAL ----
+                    float freq1 = PlcConvert.ToFloat(bufTank, 4);   // 300-303
+                    float freq2 = PlcConvert.ToFloat(bufTank, 8);   // 304-307
+                    // ---- MODE INT ----
+                    mode = (short)((bufTank[12] << 8) | bufTank[13]); // 308-309
+                    button27.Visible = interLockRemoteG12;
+                    button24.Visible = !interLockRemoteG12;
+                    button25.Visible = true;
+                    button22.Visible = true;
+                    switch (mode)
+                    {
+                        case 0:
+                            textBox45.Text = "MANUAL";
+                            textBox46.Text = "MANUAL";
+                            if (interLockRemoteG12 == true)
+                            {
+                                button26.Visible = false;
+                                button23.Visible = false;
+                            }
+                            else
+                            {
+                                button26.Visible = false;
+                                button23.Visible = false;
+                            }
+                            break;
+
+                        case 1:
+                            textBox45.Text = "AUTO";
+                            textBox46.Text = "AUTO";
+                            if (interLockRemoteG12 == true)
+                            {
+                                button26.Visible = true;
+                                button23.Visible = true;
+                            }
+                            else
+                            {
+                                button26.Visible = false;
+                                button23.Visible = false;
+                            }
+                            break;
+
+                        case 2:
+                            textBox45.Text = "MANUAL";
+                            textBox46.Text = "AUTO";
+                            if (interLockRemoteG12 == true)
+                            {
+                                button26.Visible = true;
+                                button23.Visible = false;
+                            }
+                            else
+                            {
+                                button26.Visible = false;
+                                button23.Visible = false;
+                            }
+                            break;
+
+                        case 3:
+                            textBox45.Text = "AUTO";
+                            textBox46.Text = "MANUAL";
+                            if (interLockRemoteG12 == true)
+                            {
+                                button26.Visible = false;
+                                button23.Visible = true;
+                            }
+                            else
+                            {
+                                button26.Visible = false;
+                                button23.Visible = false;
+                            }
+                            break;
+
+                        default:
+                            textBox45.Text = "MANUAL";
+                            textBox46.Text = "MANUAL";
+                            button26.Visible = false;
+                            button23.Visible = false;
+                            break;
+                    }
+                    textBox43.Text = freq1.ToString("0.0");
+                    textBox44.Text = freq2.ToString("0.0");
+                    comboBox1.Text = ParseStatus(statusOnT1);
+                    comboBox3.Text = ParseStatus(statusOnT2);
+                    currentstatusOnT1 = (ushort)statusOnT1;
+                    currentstatusOnT2 = (ushort)statusOnT2;
+                    #endregion
+                    #region hienthi_level_tank
+                    int level = Wells[1].TankFloatLevel;
+                    UpdateWaterLevel2(panel29, level); UpdateWaterLevel2(panel30, level);
+                    //Update trang thai nha may
+                    UpdateWaterLevelBool(panel31, ffStatus); UpdateWaterLevelBool(panel32, ffStatus);
+                    if (level != _lastLevel)
+                    {
+                        label80.Visible = false;
+                        label81.Visible = false;
+                        label82.Visible = false;
+
+                        switch (level)
+                        {
+                            case 3:
+                                label80.Visible = true;
+                                break;
+
+                            case 2:
+                                label81.Visible = true;
+                                break;
+
+                            case 1:
+                            case 0:
+                                label82.Visible = true;
+                                break;
+                        }
+
+                        _lastLevel = level;
+                    }
+                    label91.Visible = ffStatus;     // ff = 1 → hiện 91
+                    label92.Visible = !ffStatus;    // ff = 0 → hiện 92
+                    twoState(standardControl120, van1);
+                    twoState(standardControl121, van2);
+                    twoState(standardControl3, bomTankTG);
+                    //Hien Thi Trang thai Tank
+                    multipeState(standardControl96, (byte)statusOnT1);
+                    multipeState(standardControl101, (byte)statusOnT1);
+                    multipeState(standardControl98, (byte)statusOnT1);
+                    multipeState(standardControl61, (byte)statusOnT1);
+
+                    multipeState(standardControl97, (byte)statusOnT2);
+                    multipeState(standardControl99, (byte)statusOnT2);
+                    multipeState(standardControl100, (byte)statusOnT2);
+                    if (statusOnT1 == 1 || statusOnT2 == 1)
+                    {
+                        multipeState(standardControl102, 1);
+                        multipeState(standardControl94, 1);
+                        multipeState(standardControl103, 1);
+                        multipeState(standardControl110, 1);
+                        multipeState(standardControl111, 1);
+                        multipeState(standardControl118, 1);
+                        multipeState(standardControl119, 1);
+                        multipeState(standardControl113, 1);
+                        multipeState(standardControl114, 1);
+                    }
+                    else
+                    {
+                        multipeState(standardControl102, 0);
+                        multipeState(standardControl94, 0);
+                        multipeState(standardControl103, 0);
+                        multipeState(standardControl110, 0);
+                        multipeState(standardControl111, 0);
+                        multipeState(standardControl118, 0);
+                        multipeState(standardControl119, 0);
+                        multipeState(standardControl113, 0);
+                        multipeState(standardControl114, 0);
+                    }
+                    #endregion
+                    #region hienthi_button_chucnang
+                    button20.Visible = Wells[0].IsEditable;
+                    button2.Visible = Wells[1].IsEditable;
+                    button5.Visible = Wells[2].IsEditable;
+                    button8.Visible = Wells[3].IsEditable;
+                    button11.Visible = Wells[4].IsEditable;
+                    button14.Visible = Wells[5].IsEditable;
+                    button17.Visible = Wells[6].IsEditable;
+
+                    if (Wells[0].ControlMode == 1)
+                    {
+                        button21.Visible = true; 
+                        button19.Visible = true;
+
+                    }
+                    else
+                    {
+                        button21.Visible = false;
+                        button19.Visible = false;
+
+                    }
+                    if (Wells[1].ControlMode == 1)
+                    {
+                        button1.Visible = true;
+                        button3.Visible = true;
+                    }
+                    else
+                    {
+                        button1.Visible = false;
+                        button3.Visible = false;
+
+                    }
+                    if (Wells[2].ControlMode == 1)
+                    {
+                        button6.Visible = true;
+                        button4.Visible = true;
+
+                    }
+                    else
+                    {
+                        button6.Visible = false;
+                        button4.Visible = false;
+
+                    }
+                    if (Wells[3].ControlMode == 1)
+                    {
+                        button9.Visible = true;
+                        button7.Visible = true;
+
+                    }
+                    else
+                    {
+                        button9.Visible = false;
+                        button7.Visible = false;
+
+                    }
+                    if (Wells[4].ControlMode == 1)
+                    {
+                        button12.Visible = true;
+                        button10.Visible = true;
+
+                    }
+                    else
+                    {
+                        button12.Visible = false;
+                        button10.Visible = false;
+
+                    }
+                    if (Wells[5].ControlMode == 1)
+                    {
+                        button15.Visible = true;
+                        button13.Visible = true;
+
+                    }
+                    else
+                    {
+                        button15.Visible = false;
+                        button13.Visible = false;
+
+                    }
+                    if (Wells[6].ControlMode == 1)
+                    {
+                        button18.Visible = true;
+                        button16.Visible = true;
+
+                    }
+                    else
+                    {
+                        button18.Visible = false;
+                        button16.Visible = false;
+
+                    }
+                    #endregion
+                    #region hienthi_gieng
+                    // ==== Hiển thị GIẾNG 8 ====
+                    ShowPlcControlMode(comboBox38, Wells[0].RunModeText);
+                    textBox37.Text = Wells[0].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox39, Wells[0].ControlModeText);
+                    textBox42.Text = Wells[0].WaterLevel.ToString("0.00");
+                    textBox41.Text = Wells[0].Flow.ToString("0.00");
+                    textBox40.Text = Wells[0].TotalFlow.ToString("0.0");
+                    textBox49.Text = $"{Wells[0].Flow:0.00} m3/h";
+                    textBox50.Text = $"{Wells[0].WaterLevel:0.00} m";
+
+                    // ==== Hiển thị GIẾNG 2 ====
+                    ShowPlcControlMode(comboBox5, Wells[1].RunModeText);
+                    textBox4.Text = Wells[1].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox6, Wells[1].ControlModeText);
+                    textBox1.Text = Wells[1].WaterLevel.ToString("0.00");
+                    textBox2.Text = Wells[1].Flow.ToString("0.00");
+                    textBox3.Text = Wells[1].TotalFlow.ToString("0.0");
+                    textBox57.Text = $"{Wells[1].Flow:0.00} m3/h";
+                    textBox58.Text = $"{Wells[1].WaterLevel:0.00} m";
+
+                    // ==== Hiển thị GIẾNG 3 ====
+                    ShowPlcControlMode(comboBox8, Wells[2].RunModeText);
+                    textBox7.Text = Wells[2].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox9, Wells[2].ControlModeText);
+                    textBox12.Text = Wells[2].WaterLevel.ToString("0.00");
+                    textBox11.Text = Wells[2].Flow.ToString("0.00");
+                    textBox10.Text = Wells[2].TotalFlow.ToString("0.0");
+                    textBox59.Text = $"{Wells[2].Flow:0.00} m3/h";
+                    textBox60.Text = $"{Wells[2].WaterLevel:0.00} m";
+
+                    // ==== Hiển thị GIẾNG 4 ====
+                    ShowPlcControlMode(comboBox14, Wells[3].RunModeText);
+                    textBox13.Text = Wells[3].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox15, Wells[3].ControlModeText);
+                    textBox18.Text = Wells[3].WaterLevel.ToString("0.00");
+                    textBox17.Text = Wells[3].Flow.ToString("0.00");
+                    textBox16.Text = Wells[3].TotalFlow.ToString("0.0");
+                    textBox61.Text = $"{Wells[3].Flow:0.00} m3/h";
+                    textBox62.Text = $"{Wells[3].WaterLevel:0.00} m";
+
+                    // ==== Hiển thị GIẾNG 5 ====
+                    ShowPlcControlMode(comboBox20, Wells[4].RunModeText);
+                    textBox19.Text = Wells[4].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox21, Wells[4].ControlModeText);
+                    textBox24.Text = Wells[4].WaterLevel.ToString("0.00");
+                    textBox23.Text = Wells[4].Flow.ToString("0.00");
+                    textBox22.Text = Wells[4].TotalFlow.ToString("0.0");
+                    textBox55.Text = $"{Wells[4].Flow:0.00} m3/h";
+                    textBox56.Text = $"{Wells[4].WaterLevel:0.00} m";
+
+                    // ==== Hiển thị GIẾNG 6 ====
+                    ShowPlcControlMode(comboBox26, Wells[5].RunModeText);
+                    textBox25.Text = Wells[5].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox27, Wells[5].ControlModeText);
+                    textBox30.Text = Wells[5].WaterLevel.ToString("0.00");
+                    textBox29.Text = Wells[5].Flow.ToString("0.00");
+                    textBox28.Text = Wells[5].TotalFlow.ToString("0.0");
+                    textBox53.Text = $"{Wells[5].Flow:0.00} m3/h";
+                    textBox54.Text = $"{Wells[5].WaterLevel:0.00} m";
+
+                    // ==== Hiển thị GIẾNG 7 ====
+                    ShowPlcControlMode(comboBox32, Wells[6].RunModeText);
+                    textBox31.Text = Wells[6].Frequency.ToString("0.0");
+                    ShowPlcControlMode(comboBox33, Wells[6].ControlModeText);
+                    textBox36.Text = Wells[6].WaterLevel.ToString("0.00");
+                    textBox35.Text = Wells[6].Flow.ToString("0.00");
+                    textBox34.Text = Wells[6].TotalFlow.ToString("0.0");
+                    textBox52.Text = $"{Wells[6].Flow:0.00} m3/h";
+                    textBox51.Text = $"{Wells[6].WaterLevel:0.00} m";
+
+                    for (int i = 0; i < Wells.Length; i++)
+                    {
+                        UpdateWaterLevel(
+                            waterPanels[i],
+                            Wells[i].WaterLevel,
+                            MaxWaterLevels[i]
+                        );
+                    }
+                    //GIENG 08
+                    multipeState(standardControl63, (byte)Wells[0].RunMode);
+                    multipeState(standardControl59, (byte)Wells[0].RunMode);
+                    multipeState(standardControl54, (byte)Wells[0].RunMode);
+                    multipeState(standardControl58, (byte)Wells[0].RunMode);
+                    multipeState(standardControl60, (byte)Wells[0].RunMode);
+                    multipeState(standardControl62, (byte)Wells[0].RunMode);
+                    //Gieng 02
+                    multipeState(standardControl57, (byte)Wells[1].RunMode);
+                    multipeState(standardControl15, (byte)Wells[1].RunMode);
+                    multipeState(standardControl6, (byte)Wells[1].RunMode);
+                    multipeState(standardControl12, (byte)Wells[1].RunMode);
+                    multipeState(standardControl64, (byte)Wells[1].RunMode);
+                    multipeState(standardControl65, (byte)Wells[1].RunMode);
+                    multipeState(standardControl66, (byte)Wells[1].RunMode);
+                    //GIENG 03
+                    multipeState(standardControl10, (byte)Wells[2].RunMode);
+                    multipeState(standardControl18, (byte)Wells[2].RunMode);
+                    multipeState(standardControl13, (byte)Wells[2].RunMode);
+                    multipeState(standardControl17, (byte)Wells[2].RunMode);
+                    multipeState(standardControl9, (byte)Wells[2].RunMode);
+                    multipeState(standardControl8, (byte)Wells[2].RunMode);
+                    multipeState(standardControl4, (byte)Wells[2].RunMode);
+                    //GIENG 04
+                    multipeState(standardControl22, (byte)Wells[3].RunMode);
+                    multipeState(standardControl21, (byte)Wells[3].RunMode);
+                    multipeState(standardControl19, (byte)Wells[3].RunMode);
+                    multipeState(standardControl20, (byte)Wells[3].RunMode);
+                    multipeState(standardControl27, (byte)Wells[3].RunMode);
+                    multipeState(standardControl24, (byte)Wells[3].RunMode);
+                    //GIENG 05
+                    multipeState(standardControl32, (byte)Wells[4].RunMode);
+                    multipeState(standardControl30, (byte)Wells[4].RunMode);
+                    multipeState(standardControl28, (byte)Wells[4].RunMode);
+                    multipeState(standardControl29, (byte)Wells[4].RunMode);
+                    multipeState(standardControl31, (byte)Wells[4].RunMode);
+                    //GIENG 06
+                    multipeState(standardControl42, (byte)Wells[5].RunMode);
+                    multipeState(standardControl41, (byte)Wells[5].RunMode);
+                    multipeState(standardControl39, (byte)Wells[5].RunMode);
+                    multipeState(standardControl40, (byte)Wells[5].RunMode);
+                    multipeState(standardControl84, (byte)Wells[5].RunMode);
+                    multipeState(standardControl83, (byte)Wells[5].RunMode);
+                    multipeState(standardControl38, (byte)Wells[5].RunMode);
+                    //GIENG 07
+                    multipeState(standardControl52, (byte)Wells[6].RunMode);
+                    multipeState(standardControl48, (byte)Wells[6].RunMode);
+                    multipeState(standardControl44, (byte)Wells[6].RunMode);
+                    multipeState(standardControl47, (byte)Wells[6].RunMode);
+                    multipeState(standardControl50, (byte)Wells[6].RunMode);
+                    multipeState(standardControl49, (byte)Wells[6].RunMode);
+                    multipeState(standardControl51, (byte)Wells[6].RunMode);
+
+                    UpdateAllSymbols();
+                    #endregion
+                }
+                }
+                catch (Exception ex)
+                {
+                    ShowErrorOnce(ex.Message);
+                }
+                finally
+                {
+                _isReading = false;
+                }
+
+        }
