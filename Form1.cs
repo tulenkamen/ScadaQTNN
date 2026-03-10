@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,14 +12,11 @@ using S7.Net.Types;
 using SymbolFactoryDotNet;
 using System.Data.SqlClient;
 using System.Threading;
-using ScadaQTNN.Data;
-using ScadaQTNN.Models;
-using ScadaQTNN.Presentation;
 
 namespace ScadaQTNN
 {
 
-    public partial class Form1 : Form, IAlarmView
+    public partial class Form1 : Form
     {
         // ===== BIẾN TOÀN CỤC =====
         PlcService plc;
@@ -101,6 +97,8 @@ namespace ScadaQTNN
         {
             InitializeComponent();
             this.DoubleBuffered = true;
+            typeof(DataGridView).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+    .SetValue(dataGridView1, true, null);
         }
         #region BUFFER_KHOI_TAO_GIA_TRI_GIENG
         private int GetPriority(byte state)
@@ -317,9 +315,9 @@ namespace ScadaQTNN
                 e.Handled = true;
             }
         }
-                private static readonly Dictionary<ushort, string> FaultMap =
-            new Dictionary<ushort, string>
-        {
+        private static readonly Dictionary<ushort, string> FaultMap =
+    new Dictionary<ushort, string>
+{
     {0x0000, "Không lỗi"},
     {0x0F01, "[COMMUNICATION FAULT] Mất truyền thông giếng"},
 
@@ -355,7 +353,7 @@ namespace ScadaQTNN
     {0x00C9, "[INVERTER FAULT] E.SAF - Lỗi an toàn"},
 
     {0x00F5, "[INVERTER FAULT] E.5 - Lỗi không xác định"}
-        };
+};
 
         private string GetFaultText(ushort code)
         {
@@ -370,12 +368,6 @@ namespace ScadaQTNN
 
         private void SetupAlarmGrid()
         {
-            // Reduce flicker via reflection (DoubleBuffered is protected on DataGridView)
-            typeof(DataGridView).InvokeMember(
-                "DoubleBuffered",
-                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty,
-                null, dataGridView1, new object[] { true });
-
             // Không để grid tự tạo cột nữa
             dataGridView1.AutoGenerateColumns = false;
             dataGridView1.Dock = DockStyle.Fill;
@@ -417,12 +409,12 @@ namespace ScadaQTNN
             };
             dataGridView1.Columns.Add(colTime);
 
-            // WellName (bound to WellName column — mapped by presenter)
+            // WellName
             var colWell = new DataGridViewTextBoxColumn
             {
                 Name = "WellId",
                 HeaderText = "Tên trạm",
-                DataPropertyName = "WellName",
+                DataPropertyName = "WellId",
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
             };
             dataGridView1.Columns.Add(colWell);
@@ -475,8 +467,6 @@ namespace ScadaQTNN
     {7, "Giếng NL.07"}
 };
         private BindingSource alarmSource = new BindingSource();
-        private DataTable alarmTable;
-        private AlarmPresenter _alarmPresenter;
         private void DataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             var col = dataGridView1.Columns[e.ColumnIndex];
@@ -577,140 +567,69 @@ namespace ScadaQTNN
                 _alarmReloadTimer?.Dispose();
             }
             catch { }
-
-            try
-            {
-                _alarmPresenter?.Stop();
-                _alarmPresenter?.Dispose();
-            }
-            catch { }
         }
-
-        private void SetupAlarmTable()
-        {
-            alarmTable = new DataTable("Alarms");
-            alarmTable.Columns.Add("Id", typeof(int));
-            alarmTable.Columns.Add("ErrorTime", typeof(DateTime));
-            alarmTable.Columns.Add("WellId", typeof(int));
-            alarmTable.Columns.Add("WellName", typeof(string));
-            alarmTable.Columns.Add("ErrorCode", typeof(int));
-            alarmTable.Columns.Add("Description", typeof(string));
-            alarmTable.Columns.Add("IsHandled", typeof(bool));
-            alarmTable.PrimaryKey = new[] { alarmTable.Columns["Id"] };
-
-            alarmSource.DataSource = alarmTable;
-            dataGridView1.DataSource = alarmSource;
-        }
-
-        void IAlarmView.ReplaceAll(IReadOnlyList<Alarm> alarms)
-        {
-            if (this.InvokeRequired)
-            {
-                this.BeginInvoke((Action)(() => ((IAlarmView)this).ReplaceAll(alarms)));
-                return;
-            }
-
-            if (alarmTable == null) return;
-            alarmTable.BeginLoadData();
-            try
-            {
-                alarmTable.Clear();
-                foreach (var alarm in alarms)
-                {
-                    alarmTable.Rows.Add(
-                        alarm.Id,
-                        alarm.ErrorTime,
-                        alarm.WellId,
-                        alarm.WellName ?? $"#{alarm.WellId}",
-                        alarm.ErrorCode,
-                        alarm.Description,
-                        alarm.IsHandled);
-                }
-            }
-            finally
-            {
-                alarmTable.EndLoadData();
-            }
-        }
-
-        void IAlarmView.Upsert(Alarm alarm)
-        {
-            if (this.InvokeRequired)
-            {
-                this.BeginInvoke((Action)(() => ((IAlarmView)this).Upsert(alarm)));
-                return;
-            }
-
-            if (alarmTable == null) return;
-            alarmTable.BeginLoadData();
-            try
-            {
-                var row = alarmTable.Rows.Find(alarm.Id);
-                if (row != null)
-                {
-                    row["ErrorTime"] = alarm.ErrorTime;
-                    row["WellId"] = alarm.WellId;
-                    row["WellName"] = alarm.WellName ?? $"#{alarm.WellId}";
-                    row["ErrorCode"] = alarm.ErrorCode;
-                    row["Description"] = alarm.Description;
-                    row["IsHandled"] = alarm.IsHandled;
-                }
-                else
-                {
-                    alarmTable.Rows.Add(
-                        alarm.Id,
-                        alarm.ErrorTime,
-                        alarm.WellId,
-                        alarm.WellName ?? $"#{alarm.WellId}",
-                        alarm.ErrorCode,
-                        alarm.Description,
-                        alarm.IsHandled);
-                }
-            }
-            finally
-            {
-                alarmTable.EndLoadData();
-            }
-        }
-        // Minimal, low-lag loader: delegates to presenter's ReplaceAll via alarmTable
+        // Minimal, low-lag loader: only update UI when top-id or row count changes
         private volatile int _isLoadingAlarms = 0;
+        private string _lastAlarmSignature = null;
 
         private void LoadAlarmGrid()
         {
             if (System.Threading.Interlocked.Exchange(ref _isLoadingAlarms, 1) == 1)
                 return;
 
-            LoadAlarmGridAsync();
-        }
-
-        private async void LoadAlarmGridAsync()
-        {
-            IReadOnlyList<Alarm> alarms = null;
-            try
+            Task.Run(() =>
             {
-                alarms = await new AlarmRepository().GetLatestAsync().ConfigureAwait(false);
-                if (alarms != null)
+                DataTable dt = null;
+                try
                 {
-                    foreach (var alarm in alarms)
-                    {
-                        if (wellNameMap.TryGetValue(alarm.WellId, out var name))
-                            alarm.WellName = name;
-                        else
-                            alarm.WellName = $"#{alarm.WellId}";
-                    }
+                    const string query = @"
+                SELECT TOP 200 Id, ErrorTime, WellId, ErrorCode, Description, IsHandled
+                FROM dbo.Well_Alarm
+                ORDER BY ErrorTime DESC";
+                    dt = ClassSQL.ExecuteQuery(query);
                 }
-            }
-            catch
-            {
-                // bỏ qua lỗi query ở đây; xử lý trên UI nếu cần
-            }
-            finally
-            {
-                System.Threading.Interlocked.Exchange(ref _isLoadingAlarms, 0);
-            }
+                catch
+                {
+                    // bỏ qua lỗi query ở đây; xử lý trên UI nếu cần
+                }
 
-            if (alarms != null)
-                ((IAlarmView)this).ReplaceAll(alarms);
+                this.BeginInvoke((Action)(() =>
+                {
+                    try
+                    {
+                        if (dt == null) return;
+
+                        // simple signature: row count + top row Id (fast to compute)
+                        string newSig;
+                        if (dt.Rows.Count == 0)
+                            newSig = "0";
+                        else
+                            newSig = dt.Rows.Count + ":" + (dt.Rows[0]["Id"]?.ToString() ?? "0");
+
+                        // nếu không đổi thì không cập nhật UI (giảm lag)
+                        if (newSig == _lastAlarmSignature)
+                            return;
+
+                        _lastAlarmSignature = newSig;
+
+                        // bind/update once (keep it simple)
+                        dataGridView1.SuspendLayout();
+                        try
+                        {
+                            alarmSource.DataSource = dt;
+                            dataGridView1.DataSource = alarmSource;
+                        }
+                        finally
+                        {
+                            dataGridView1.ResumeLayout();
+                        }
+                    }
+                    finally
+                    {
+                        System.Threading.Interlocked.Exchange(ref _isLoadingAlarms, 0);
+                    }
+                }));
+            });
         }
         private void DataGridView1_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
         {
@@ -883,7 +802,7 @@ namespace ScadaQTNN
 
                 int firstOffset = wellOffsets[0];
                 int lastOffset = wellOffsets[wells.Length - 1] + 33;
-                int totalBytes = lastOffset - firstOffset +1;
+                int totalBytes = lastOffset - firstOffset + 1;
 
                 byte[] buffer = (byte[])_plc.ReadBytes(
                     DataType.DataBlock,
@@ -1527,7 +1446,7 @@ namespace ScadaQTNN
                 new SqlParameter("@WellId", wellId)
             );
         }
-   
+
         private void InsertWellAlarm(int wellId, ushort errorCode)
         {
 
@@ -1550,11 +1469,11 @@ namespace ScadaQTNN
             {
                 ShowErrorOnce(ex.Message);
             }
-            }
+        }
 
 
         #endregion
-        private void Form1_Load(object sender, EventArgs e) 
+        private void Form1_Load(object sender, EventArgs e)
         {
 
             int wellCount = 7; // số giếng
@@ -1666,13 +1585,8 @@ namespace ScadaQTNN
             #endregion
 
             SetupAlarmGrid();
-            SetupAlarmTable();
+            LoadAlarmGrid();
 
-            _alarmPresenter = new AlarmPresenter(
-                this,
-                new AlarmRepository(),
-                wellNameMap);
-            _alarmPresenter.Start();
         }
         private async void timer1_Tick(object sender, EventArgs e)
         {
@@ -1931,7 +1845,7 @@ namespace ScadaQTNN
             }
             else
             { currentFreq = freq; }
-            
+
         }
         #endregion
         #region BUTTON_GIENG_3
@@ -3533,7 +3447,7 @@ namespace ScadaQTNN
             int count = Math.Min(Wells.Length, wellUIs.Count);
 
             for (int i = 0; i < count; i++)
-                {
+            {
                 var well = Wells[i];
                 var ui = wellUIs[i];
 
@@ -3619,7 +3533,7 @@ namespace ScadaQTNN
                 textBox44.KeyPress -= OnlyNumber_KeyPress;
                 textBox44.KeyPress += OnlyNumber_KeyPress;
             }
-            else if(mode == 2)
+            else if (mode == 2)
             {
 
                 panel19.BackColor = editBackColor;
@@ -3746,7 +3660,7 @@ namespace ScadaQTNN
 
                 if (comboBox3.SelectedItem?.ToString() == "START")
                 { runValue2 = 1; }
-                
+
                 plc.WriteInt("DB28.DBW72", runValue1);
                 plc.WriteInt("DB28.DBW80", runValue2);
 

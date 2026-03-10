@@ -86,11 +86,6 @@
     <Compile Include="Logger.cs" />
     <Compile Include="PollingService.cs" />
     <Compile Include="ClassSQL.cs" />
-    <Compile Include="Models\Alarm.cs" />
-    <Compile Include="Data\IAlarmRepository.cs" />
-    <Compile Include="Data\AlarmRepository.cs" />
-    <Compile Include="Presentation\IAlarmView.cs" />
-    <Compile Include="Presentation\AlarmPresenter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Class_Tag_List_Read.cs" />
     <Compile Include="Form1.cs">
