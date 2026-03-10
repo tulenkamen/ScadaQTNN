@@ -410,9 +410,9 @@ namespace ScadaQTNN
             // WellName
             var colWell = new DataGridViewTextBoxColumn
             {
-                Name = "WellName",
+                Name = "WellId",
                 HeaderText = "Tên trạm",
-                DataPropertyName = "WellName",
+                DataPropertyName = "WellId",
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
             };
             dataGridView1.Columns.Add(colWell);
@@ -449,6 +449,8 @@ namespace ScadaQTNN
             };
             dataGridView1.Columns.Add(colHandled);
 
+            dataGridView1.CellFormatting += DataGridView1_CellFormatting;
+
             dataGridView1.RowPrePaint -= DataGridView1_RowPrePaint;
             dataGridView1.RowPrePaint += DataGridView1_RowPrePaint;
         }
@@ -463,8 +465,30 @@ namespace ScadaQTNN
     {7, "Giếng NL.07"}
 };
         private BindingSource alarmSource = new BindingSource();
-        private int _isLoadingAlarms = 0; // 0 = not loading, 1 = loading
-                                          // Thêm method này vào Form1.cs
+        private void DataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            var col = dataGridView1.Columns[e.ColumnIndex];
+            if (col == null) return;
+
+            // nếu cột gốc bạn đang dùng tên "WellId"
+            if (col.Name == "WellId" || col.DataPropertyName == "WellId")
+            {
+                if (e.Value == null || e.Value == DBNull.Value) return;
+
+                if (int.TryParse(e.Value.ToString(), out int id))
+                {
+                    if (wellNameMap.TryGetValue(id, out var name))
+                    {
+                        e.Value = name;
+                    }
+                    else
+                    {
+                        e.Value = $"#{id}";
+                    }
+                    e.FormattingApplied = true;
+                }
+            }
+        }
         private void RequestAlarmGridReload()
         {
             lock (_alarmReloadLock)
@@ -542,119 +566,68 @@ namespace ScadaQTNN
             }
             catch { }
         }
+        // Minimal, low-lag loader: only update UI when top-id or row count changes
+        private volatile int _isLoadingAlarms = 0;
+        private string _lastAlarmSignature = null;
+
         private void LoadAlarmGrid()
         {
-            // Nếu đang load rồi thì bỏ qua
             if (System.Threading.Interlocked.Exchange(ref _isLoadingAlarms, 1) == 1)
                 return;
 
-            try
+            Task.Run(() =>
             {
-                // Chạy query ở background để không block UI thread
-                Task.Run(() =>
+                DataTable dt = null;
+                try
                 {
-                    DataTable dt = null;
+                    const string query = @"
+                SELECT TOP 200 Id, ErrorTime, WellId, ErrorCode, Description, IsHandled
+                FROM dbo.Well_Alarm
+                ORDER BY ErrorTime DESC";
+                    dt = ClassSQL.ExecuteQuery(query);
+                }
+                catch
+                {
+                    // bỏ qua lỗi query ở đây; xử lý trên UI nếu cần
+                }
+
+                this.BeginInvoke((Action)(() =>
+                {
                     try
                     {
-                        string query = @"
-                    SELECT TOP 200
-                        Id,
-                        ErrorTime,
-                        WellId,
-                        ErrorCode,
-                        Description,
-                        IsHandled
-                    FROM dbo.Well_Alarm
-                    ORDER BY ErrorTime DESC";
+                        if (dt == null) return;
 
-                        dt = ClassSQL.ExecuteQuery(query); // synchronous query executed off-ui thread
-                    }
-                    catch (Exception exQuery)
-                    {
-                        // Log; we'll show friendly error on UI thread later
-                        Logger.Error(exQuery, "LoadAlarmGrid - DB query");
-                    }
+                        // simple signature: row count + top row Id (fast to compute)
+                        string newSig;
+                        if (dt.Rows.Count == 0)
+                            newSig = "0";
+                        else
+                            newSig = dt.Rows.Count + ":" + (dt.Rows[0]["Id"]?.ToString() ?? "0");
 
-                    // Update UI on UI thread
-                    this.BeginInvoke((Action)(() =>
-                    {
+                        // nếu không đổi thì không cập nhật UI (giảm lag)
+                        if (newSig == _lastAlarmSignature)
+                            return;
+
+                        _lastAlarmSignature = newSig;
+
+                        // bind/update once (keep it simple)
+                        dataGridView1.SuspendLayout();
                         try
                         {
-                            if (dt == null)
-                                return;
-
-                            // Chuẩn bị DataTable có đúng cột mà grid kỳ vọng
-                            DataTable dtForGrid = new DataTable();
-                            dtForGrid.Columns.Add("Id", typeof(int));
-                            dtForGrid.Columns.Add("ErrorTime", typeof(DateTime));
-                            dtForGrid.Columns.Add("WellName", typeof(string));
-                            dtForGrid.Columns.Add("ErrorCode", typeof(int));
-                            dtForGrid.Columns.Add("Description", typeof(string));
-                            dtForGrid.Columns.Add("IsHandled", typeof(bool));
-
-                            foreach (DataRow r in dt.Rows)
-                            {
-                                DataRow nr = dtForGrid.NewRow();
-                                nr["Id"] = r["Id"] == DBNull.Value ? 0 : Convert.ToInt32(r["Id"]);
-                                nr["ErrorTime"] = r["ErrorTime"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(r["ErrorTime"]);
-
-                                int wId = 0;
-                                if (r["WellId"] != DBNull.Value)
-                                    int.TryParse(r["WellId"].ToString(), out wId);
-                                nr["WellName"] = wellNameMap.ContainsKey(wId) ? wellNameMap[wId] : "Unknown";
-
-                                nr["ErrorCode"] = r["ErrorCode"] == DBNull.Value ? 0 : Convert.ToInt32(r["ErrorCode"]);
-                                nr["Description"] = r["Description"] == DBNull.Value ? string.Empty : r["Description"].ToString();
-                                nr["IsHandled"] = r["IsHandled"] == DBNull.Value ? false : Convert.ToBoolean(r["IsHandled"]);
-                                dtForGrid.Rows.Add(nr);
-                            }
-
-                            // Bind/update DataSource (giữ cấu trúc cột do SetupAlarmGrid đã tạo)
-                            var existing = alarmSource.DataSource as DataTable;
-                            dataGridView1.SuspendLayout();
-                            try
-                            {
-                                if (existing == null)
-                                {
-                                    alarmSource.DataSource = dtForGrid;
-                                    dataGridView1.DataSource = alarmSource;
-                                }
-                                else
-                                {
-                                    existing.BeginLoadData();
-                                    existing.Clear();
-                                    foreach (DataRow r in dtForGrid.Rows)
-                                        existing.ImportRow(r);
-                                    existing.EndLoadData();
-                                    alarmSource.ResetBindings(false);
-                                }
-                            }
-                            finally
-                            {
-                                dataGridView1.ResumeLayout();
-                            }
-                        }
-                        catch (Exception exUI)
-                        {
-                            Logger.Error(exUI, "LoadAlarmGrid - UI update");
-                            // show friendly message once
-                            ShowErrorOnce(exUI.Message);
+                            alarmSource.DataSource = dt;
+                            dataGridView1.DataSource = alarmSource;
                         }
                         finally
                         {
-                            // cho phép load tiếp
-                            System.Threading.Interlocked.Exchange(ref _isLoadingAlarms, 0);
+                            dataGridView1.ResumeLayout();
                         }
-                    }));
-                });
-            }
-            catch (Exception exOuter)
-            {
-                Logger.Error(exOuter, "LoadAlarmGrid outer");
-                // reset flag để không khóa vĩnh viễn
-                System.Threading.Interlocked.Exchange(ref _isLoadingAlarms, 0);
-                this.BeginInvoke((Action)(() => ShowErrorOnce(exOuter.Message)));
-            }
+                    }
+                    finally
+                    {
+                        System.Threading.Interlocked.Exchange(ref _isLoadingAlarms, 0);
+                    }
+                }));
+            });
         }
         private void DataGridView1_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
         {
