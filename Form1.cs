@@ -68,10 +68,11 @@ namespace ScadaQTNN
         private readonly object _wellsLock = new object();
 
         // Thêm vào phần biến toàn cục của Form1
-        private bool _alarmGridInitialized = false;
-        private int _lastAlarmMaxId = -1;
-        private readonly TimeSpan _alarmGridMinInterval = TimeSpan.FromSeconds(2); // throttle
-        private DateTime _lastAlarmGridUpdate = DateTime.MinValue;
+        // Thêm này vào phần biến toàn cục của Form1
+        private readonly TimeSpan _alarmGridMinInterval = TimeSpan.FromSeconds(2); // tối thiểu 2s giữa hai reload thực tế
+        private DateTime _lastAlarmGridReload = DateTime.MinValue;
+        private System.Threading.Timer _alarmReloadTimer = null;
+        private readonly object _alarmReloadLock = new object();
 
         private void ShowErrorOnce(string message)
         {
@@ -394,116 +395,197 @@ namespace ScadaQTNN
     {7, "Giếng NL.07"}
 };
         private BindingSource alarmSource = new BindingSource();
-
-        private void LoadAlarmGrid()
+        private int _isLoadingAlarms = 0; // 0 = not loading, 1 = loading
+                                          // Thêm method này vào Form1.cs
+        private void RequestAlarmGridReload()
         {
-            try
+            lock (_alarmReloadLock)
             {
-                string query = @"
-            SELECT 
-                Id,
-                ErrorTime,
-                WellId,
-                ErrorCode,
-                Description,
-                IsHandled
-            FROM dbo.Well_Alarm
-            ORDER BY ErrorTime DESC";
+                var now = DateTime.Now;
+                var elapsed = now - _lastAlarmGridReload;
 
-                DataTable dt = ClassSQL.ExecuteQuery(query);
-                if (dt == null) return;
-
-                // Map WellId -> WellName
-                if (!dt.Columns.Contains("WellName"))
-                    dt.Columns.Add("WellName", typeof(string));
-
-                foreach (DataRow row in dt.Rows)
+                if (elapsed >= _alarmGridMinInterval)
                 {
-                    int id = 0;
-                    if (row["WellId"] != DBNull.Value)
-                        int.TryParse(row["WellId"].ToString(), out id);
-
-                    if (wellNameMap.ContainsKey(id))
-                        row["WellName"] = wellNameMap[id];
-                    else
-                        row["WellName"] = "Unknown";
-                }
-
-                // Remove original WellId column if present (safe check)
-                if (dt.Columns.Contains("WellId"))
-                    dt.Columns.Remove("WellId");
-
-                // Ensure WellName in correct position if column exists
-                if (dt.Columns.Contains("WellName"))
-                {
+                    // Thực hiện reload ngay lập tức (trên UI thread)
+                    _lastAlarmGridReload = now;
                     try
                     {
-                        dt.Columns["WellName"].SetOrdinal(2);
+                        if (!this.IsDisposed && this.IsHandleCreated)
+                            this.BeginInvoke((Action)(() => LoadAlarmGrid()));
                     }
                     catch
                     {
-                        // ignore if cannot set ordinal
+                        // ignore invoke errors during closing
+                    }
+
+                    // Huỷ timer nếu tồn tại
+                    _alarmReloadTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+                }
+                else
+                {
+                    // Đặt timer để chạy sau phần thời gian còn lại
+                    var remaining = _alarmGridMinInterval - elapsed;
+
+                    if (_alarmReloadTimer == null)
+                    {
+                        _alarmReloadTimer = new System.Threading.Timer(_ =>
+                        {
+                            lock (_alarmReloadLock)
+                            {
+                                try
+                                {
+                                    _lastAlarmGridReload = DateTime.Now;
+                                    if (!this.IsDisposed && this.IsHandleCreated)
+                                        this.BeginInvoke((Action)(() => LoadAlarmGrid()));
+                                }
+                                catch
+                                {
+                                    // ignore
+                                }
+                                finally
+                                {
+                                    // disable timer (one-shot)
+                                    try { _alarmReloadTimer?.Change(Timeout.Infinite, Timeout.Infinite); } catch { }
+                                }
+                            }
+                        }, null, remaining, Timeout.InfiniteTimeSpan);
+                    }
+                    else
+                    {
+                        // reschedule timer
+                        try
+                        {
+                            _alarmReloadTimer.Change(remaining, Timeout.InfiniteTimeSpan);
+                        }
+                        catch
+                        {
+                            // ignore if failing to reschedule
+                        }
                     }
                 }
-
-                // Bind the data (use ResetBindings to ensure UI update)
-                alarmSource.DataSource = dt;
-                alarmSource.ResetBindings(false);
-
-                // Assign DataSource to grid (if not already)
-                if (dataGridView1.DataSource != alarmSource)
-                    dataGridView1.DataSource = alarmSource;
-
-                // ==========================
-                // Cấu hình cột *nếu tồn tại* — không gây exception nếu cột chưa được tạo
-                // ==========================
-                if (dataGridView1.Columns.Contains("Id"))
-                {
-                    dataGridView1.Columns["Id"].HeaderText = "ID";
-                    dataGridView1.Columns["Id"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-                    dataGridView1.Columns["Id"].Width = 50;
-                }
-
-                if (dataGridView1.Columns.Contains("ErrorTime"))
-                {
-                    dataGridView1.Columns["ErrorTime"].HeaderText = "Thời gian";
-                    dataGridView1.Columns["ErrorTime"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-                }
-
-                if (dataGridView1.Columns.Contains("WellName"))
-                {
-                    dataGridView1.Columns["WellName"].HeaderText = "Tên trạm";
-                    dataGridView1.Columns["WellName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-                }
-
-                if (dataGridView1.Columns.Contains("ErrorCode"))
-                {
-                    dataGridView1.Columns["ErrorCode"].HeaderText = "Mã lỗi";
-                    dataGridView1.Columns["ErrorCode"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-                    dataGridView1.Columns["ErrorCode"].Width = 80;
-                }
-
-                if (dataGridView1.Columns.Contains("Description"))
-                {
-                    dataGridView1.Columns["Description"].HeaderText = "Mô tả";
-                    dataGridView1.Columns["Description"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                    dataGridView1.Columns["Description"].DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-                }
-
-                if (dataGridView1.Columns.Contains("IsHandled"))
-                {
-                    dataGridView1.Columns["IsHandled"].HeaderText = "Đã xử lý";
-                    dataGridView1.Columns["IsHandled"].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-                    dataGridView1.Columns["IsHandled"].Width = 80;
-                }
-
-                // Không lặp qua tất cả rows ở đây; RowPrePaint sẽ tô màu khi cần
-                dataGridView1.Refresh();
             }
-            catch (Exception ex)
+        }
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try
             {
-                Logger.Error(ex, "LoadAlarmGrid");
-                this.BeginInvoke((Action)(() => ShowErrorOnce(ex.Message)));
+                _alarmReloadTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+                _alarmReloadTimer?.Dispose();
+            }
+            catch { }
+        }
+        private void LoadAlarmGrid()
+        {
+            // Nếu đang load rồi thì bỏ qua
+            if (System.Threading.Interlocked.Exchange(ref _isLoadingAlarms, 1) == 1)
+                return;
+
+            try
+            {
+                // Chạy query ở background để không block UI thread
+                Task.Run(() =>
+                {
+                    DataTable dt = null;
+                    try
+                    {
+                        string query = @"
+                    SELECT TOP 200
+                        Id,
+                        ErrorTime,
+                        WellId,
+                        ErrorCode,
+                        Description,
+                        IsHandled
+                    FROM dbo.Well_Alarm
+                    ORDER BY ErrorTime DESC";
+
+                        dt = ClassSQL.ExecuteQuery(query); // synchronous query executed off-ui thread
+                    }
+                    catch (Exception exQuery)
+                    {
+                        // Log; we'll show friendly error on UI thread later
+                        Logger.Error(exQuery, "LoadAlarmGrid - DB query");
+                    }
+
+                    // Update UI on UI thread
+                    this.BeginInvoke((Action)(() =>
+                    {
+                        try
+                        {
+                            if (dt == null)
+                                return;
+
+                            // Chuẩn bị DataTable có đúng cột mà grid kỳ vọng
+                            DataTable dtForGrid = new DataTable();
+                            dtForGrid.Columns.Add("Id", typeof(int));
+                            dtForGrid.Columns.Add("ErrorTime", typeof(DateTime));
+                            dtForGrid.Columns.Add("WellName", typeof(string));
+                            dtForGrid.Columns.Add("ErrorCode", typeof(int));
+                            dtForGrid.Columns.Add("Description", typeof(string));
+                            dtForGrid.Columns.Add("IsHandled", typeof(bool));
+
+                            foreach (DataRow r in dt.Rows)
+                            {
+                                DataRow nr = dtForGrid.NewRow();
+                                nr["Id"] = r["Id"] == DBNull.Value ? 0 : Convert.ToInt32(r["Id"]);
+                                nr["ErrorTime"] = r["ErrorTime"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(r["ErrorTime"]);
+
+                                int wId = 0;
+                                if (r["WellId"] != DBNull.Value)
+                                    int.TryParse(r["WellId"].ToString(), out wId);
+                                nr["WellName"] = wellNameMap.ContainsKey(wId) ? wellNameMap[wId] : "Unknown";
+
+                                nr["ErrorCode"] = r["ErrorCode"] == DBNull.Value ? 0 : Convert.ToInt32(r["ErrorCode"]);
+                                nr["Description"] = r["Description"] == DBNull.Value ? string.Empty : r["Description"].ToString();
+                                nr["IsHandled"] = r["IsHandled"] == DBNull.Value ? false : Convert.ToBoolean(r["IsHandled"]);
+                                dtForGrid.Rows.Add(nr);
+                            }
+
+                            // Bind/update DataSource (giữ cấu trúc cột do SetupAlarmGrid đã tạo)
+                            var existing = alarmSource.DataSource as DataTable;
+                            dataGridView1.SuspendLayout();
+                            try
+                            {
+                                if (existing == null)
+                                {
+                                    alarmSource.DataSource = dtForGrid;
+                                    dataGridView1.DataSource = alarmSource;
+                                }
+                                else
+                                {
+                                    existing.BeginLoadData();
+                                    existing.Clear();
+                                    foreach (DataRow r in dtForGrid.Rows)
+                                        existing.ImportRow(r);
+                                    existing.EndLoadData();
+                                    alarmSource.ResetBindings(false);
+                                }
+                            }
+                            finally
+                            {
+                                dataGridView1.ResumeLayout();
+                            }
+                        }
+                        catch (Exception exUI)
+                        {
+                            Logger.Error(exUI, "LoadAlarmGrid - UI update");
+                            // show friendly message once
+                            ShowErrorOnce(exUI.Message);
+                        }
+                        finally
+                        {
+                            // cho phép load tiếp
+                            System.Threading.Interlocked.Exchange(ref _isLoadingAlarms, 0);
+                        }
+                    }));
+                });
+            }
+            catch (Exception exOuter)
+            {
+                Logger.Error(exOuter, "LoadAlarmGrid outer");
+                // reset flag để không khóa vĩnh viễn
+                System.Threading.Interlocked.Exchange(ref _isLoadingAlarms, 0);
+                this.BeginInvoke((Action)(() => ShowErrorOnce(exOuter.Message)));
             }
         }
         private void DataGridView1_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
