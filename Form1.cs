@@ -366,7 +366,9 @@ namespace ScadaQTNN
 
         private void SetupAlarmGrid()
         {
-            dataGridView1.Dock = DockStyle.Fill; // full khung cố định
+            // Không để grid tự tạo cột nữa
+            dataGridView1.AutoGenerateColumns = false;
+            dataGridView1.Dock = DockStyle.Fill;
             dataGridView1.AllowUserToResizeRows = false;
             dataGridView1.AllowUserToResizeColumns = false;
             dataGridView1.AllowUserToAddRows = false;
@@ -374,14 +376,80 @@ namespace ScadaQTNN
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
-            dataGridView1.ScrollBars = ScrollBars.Vertical; // có thanh kéo dọc
+            dataGridView1.ScrollBars = ScrollBars.Vertical;
             dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.DarkRed;
             dataGridView1.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dataGridView1.EnableHeadersVisualStyles = false;
-
             dataGridView1.RowTemplate.Height = 28;
-            dataGridView1.RowPrePaint -= DataGridView1_RowPrePaint; // tránh subscribe nhiều lần
+
+            // Clear any design-time columns first (safe)
+            dataGridView1.Columns.Clear();
+
+            // ID
+            var colId = new DataGridViewTextBoxColumn
+            {
+                Name = "Id",
+                HeaderText = "ID",
+                DataPropertyName = "Id",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells,
+                Width = 50
+            };
+            dataGridView1.Columns.Add(colId);
+
+            // ErrorTime
+            var colTime = new DataGridViewTextBoxColumn
+            {
+                Name = "ErrorTime",
+                HeaderText = "Thời gian",
+                DataPropertyName = "ErrorTime",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+            };
+            dataGridView1.Columns.Add(colTime);
+
+            // WellName
+            var colWell = new DataGridViewTextBoxColumn
+            {
+                Name = "WellName",
+                HeaderText = "Tên trạm",
+                DataPropertyName = "WellName",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
+            };
+            dataGridView1.Columns.Add(colWell);
+
+            // ErrorCode
+            var colCode = new DataGridViewTextBoxColumn
+            {
+                Name = "ErrorCode",
+                HeaderText = "Mã lỗi",
+                DataPropertyName = "ErrorCode",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells,
+                Width = 80
+            };
+            dataGridView1.Columns.Add(colCode);
+
+            // Description (fill)
+            var colDesc = new DataGridViewTextBoxColumn
+            {
+                Name = "Description",
+                HeaderText = "Mô tả",
+                DataPropertyName = "Description",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+            };
+            dataGridView1.Columns.Add(colDesc);
+
+            // IsHandled (checkbox)
+            var colHandled = new DataGridViewCheckBoxColumn
+            {
+                Name = "IsHandled",
+                HeaderText = "Đã xử lý",
+                DataPropertyName = "IsHandled",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells,
+                Width = 80
+            };
+            dataGridView1.Columns.Add(colHandled);
+
+            dataGridView1.RowPrePaint -= DataGridView1_RowPrePaint;
             dataGridView1.RowPrePaint += DataGridView1_RowPrePaint;
         }
         private Dictionary<int, string> wellNameMap = new Dictionary<int, string>
@@ -1048,7 +1116,7 @@ namespace ScadaQTNN
                 }
 
                 // 4) reload grid on UI thread (only once)
-                this.BeginInvoke((Action)(() => LoadAlarmGrid()));
+                RequestAlarmGridReload();
             }
             catch (Exception ex)
             {
@@ -3735,15 +3803,16 @@ namespace ScadaQTNN
 
             try
             {
-                int alarmId = Convert.ToInt32(
-                    dataGridView1.Rows[e.RowIndex].Cells["Id"].Value);
+                int alarmId = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["Id"].Value);
 
                 string query = "UPDATE dbo.Well_Alarm SET IsHandled = 1 WHERE Id = @Id";
+                ClassSQL.ExecuteNonQuery(query, new SqlParameter("@Id", alarmId));
 
-                ClassSQL.ExecuteNonQuery(query,
-                    new SqlParameter("@Id", alarmId));
+                // chỉ cập nhật hàng hiện tại (không reload toàn bộ)
+                MarkAlarmHandled(alarmId);
 
-                LoadAlarmGrid();
+                // Optionally request a debounced refresh so persistent DB-driven views will sync later:
+                RequestAlarmGridReload();
             }
             catch (Exception ex)
             {
