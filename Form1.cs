@@ -1002,7 +1002,7 @@ namespace ScadaQTNN
             for (int i = 0; i < wellCount; i++)
                 Wells[i] = new WellStatus();
 
-            plc = new PlcService("192.168.1.15");
+            plc = new PlcService("192.168.1.18");
 
             if (plc.Connect())
             {

@@ -2,57 +2,72 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-public sealed class PollingService : IDisposable
+public class PollingService : IDisposable
 {
-    private readonly TimeSpan _interval;
+    private readonly TimeSpan _baseInterval = TimeSpan.FromSeconds(1);
     private CancellationTokenSource _cts;
-    private readonly Func<CancellationToken, Task> _work;
+    private Task _loopTask;
 
-    public PollingService(TimeSpan interval, Func<CancellationToken, Task> work)
-    {
-        _interval = interval;
-        _work = work ?? throw new ArgumentNullException(nameof(work));
-    }
+    public event EventHandler<PollResultEventArgs> PollResult;
 
     public void Start()
     {
-        if (_cts != null && !_cts.IsCancellationRequested) return;
+        if (_loopTask != null && !_loopTask.IsCompleted) return;
         _cts = new CancellationTokenSource();
-        _ = RunAsync(_cts.Token);
+        _loopTask = Task.Run(() => PollLoopAsync(_cts.Token));
     }
 
     public void Stop()
     {
         _cts?.Cancel();
+        try { _loopTask?.Wait(); } catch { }
+        _cts?.Dispose();
+        _cts = null;
     }
 
-    private async Task RunAsync(CancellationToken token)
+    private async Task PollLoopAsync(CancellationToken ct)
     {
-        while (!token.IsCancellationRequested)
+        var interval = _baseInterval;
+        while (!ct.IsCancellationRequested)
         {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
-                await _work(token).ConfigureAwait(false);
+                var result = await DoPollAsync(ct).ConfigureAwait(false);
+
+                // raise event on threadpool; UI must Invoke when handling
+                PollResult?.Invoke(this, new PollResultEventArgs(result));
+
+                // reset interval on success
+                interval = _baseInterval;
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex)
             {
-                // TODO: replace with your logging
-                Console.WriteLine($"PollingService error: {ex}");
+                // log ex
+                // exponential backoff to avoid tight loop on repeated failures
+                interval = TimeSpan.FromMilliseconds(Math.Min(interval.TotalMilliseconds * 2, 10000));
             }
-            sw.Stop();
-            var delay = _interval - sw.Elapsed;
-            if (delay > TimeSpan.Zero)
+
+            try
             {
-                try { await Task.Delay(delay, token).ConfigureAwait(false); }
-                catch (TaskCanceledException) { break; }
+                await Task.Delay(interval, ct).ConfigureAwait(false);
             }
+            catch (TaskCanceledException) { break; }
         }
     }
 
-    public void Dispose()
+    private async Task<object> DoPollAsync(CancellationToken ct)
     {
-        try { _cts?.Cancel(); _cts?.Dispose(); } catch { }
+        // TODO: replace with actual async I/O (DB/device)
+        await Task.Yield();
+        return new { Timestamp = DateTime.UtcNow };
     }
+
+    public void Dispose() => Stop();
+}
+
+public class PollResultEventArgs : EventArgs
+{
+    public object Data { get; }
+    public PollResultEventArgs(object data) => Data = data;
 }
