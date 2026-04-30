@@ -67,8 +67,6 @@ namespace ScadaQTNN
         private CancellationTokenSource _readLoopCts;
         private readonly object _wellsLock = new object();
 
-        // Thêm vào phần biến toàn cục của Form1
-        // Thêm này vào phần biến toàn cục của Form1
         private readonly TimeSpan _alarmGridMinInterval = TimeSpan.FromSeconds(2); // tối thiểu 2s giữa hai reload thực tế
         private DateTime _lastAlarmGridReload = DateTime.MinValue;
         private System.Threading.Timer _alarmReloadTimer = null;
