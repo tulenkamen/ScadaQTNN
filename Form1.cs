@@ -91,6 +91,13 @@ namespace ScadaQTNN
 
             _errorShowing = false;
         }
+        private void UpdateConnectionStatus(bool connected)
+        {
+            if (connected)
+                this.Text = "ScadaQTNN - 🟢 PLC: Đã kết nối";
+            else
+                this.Text = "ScadaQTNN - 🔴 PLC: Mất kết nối - Đang thử lại...";
+        }
         public Form1()
         {
             InitializeComponent();
@@ -559,6 +566,10 @@ namespace ScadaQTNN
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            timer1.Enabled = false;
+            _readLoopCts?.Cancel();
+            _pollingService?.Stop();
+            plc?.Disconnect();
             try
             {
                 _alarmReloadTimer?.Change(Timeout.Infinite, Timeout.Infinite);
@@ -583,7 +594,7 @@ namespace ScadaQTNN
                     const string query = @"
                 SELECT TOP 200 Id, ErrorTime, WellId, ErrorCode, Description, IsHandled
                 FROM dbo.Well_Alarm
-                ORDER BY ErrorTime DESC";
+                ORDER BY Id  DESC";
                     dt = ClassSQL.ExecuteQuery(query);
                 }
                 catch
@@ -733,8 +744,12 @@ namespace ScadaQTNN
             public const int WELL_BASE_OFFSET = 56;
             public const int WELL_BLOCK_SIZE = 34;
 
+            private readonly string _ip;
+            public bool IsConnected => _plc.IsConnected;
+
             public PlcService(string ip)
             {
+                _ip = ip;
                 _plc = new Plc(CpuType.S71200, ip, 0, 1);
             }
             public void WriteBit(string address, bool value)
@@ -757,6 +772,22 @@ namespace ScadaQTNN
             {
                 return _plc.Open() == ErrorCode.NoError;
             }
+            /// <summary>Kiểm tra kết nối, nếu mất thì thử kết nối lại</summary>
+            public bool EnsureConnected()
+            {
+                if (_plc.IsConnected) return true;
+                try
+                {
+                    _plc.Close(); // reset trạng thái cũ
+                    _plc = new Plc(CpuType.S71200, _ip, 0, 1); // tạo lại instance
+                    return _plc.Open() == ErrorCode.NoError;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
 
             public void Disconnect()
             {
@@ -765,6 +796,7 @@ namespace ScadaQTNN
             }
             public byte[] ReadDBRange(int dbNumber, int start, int end)
             {
+                if (!EnsureConnected()) return null;
                 if (!_plc.IsConnected) return null;
                 int length = end - start + 1;
                 return (byte[])_plc.ReadBytes(DataType.DataBlock, dbNumber, start, length);
@@ -787,6 +819,7 @@ namespace ScadaQTNN
 
             public void ReadWells(WellStatus[] wells)
             {
+
                 int[] wellOffsets =
                 {
                 56, // Well 1
@@ -802,12 +835,15 @@ namespace ScadaQTNN
                 int lastOffset = wellOffsets[wells.Length - 1] + 33;
                 int totalBytes = lastOffset - firstOffset + 1;
 
+                if (!EnsureConnected()) return; // ← Tự reconnect hoặc bỏ qua nếu chưa kết nối
                 byte[] buffer = (byte[])_plc.ReadBytes(
                     DataType.DataBlock,
                     DB_NUMBER,
                     firstOffset,
                     totalBytes
                 );
+                if (buffer == null || buffer.Length < totalBytes) return; // ← null guard
+
 
                 for (int i = 0; i < wells.Length; i++)
                 {
@@ -825,19 +861,19 @@ namespace ScadaQTNN
                     wells[i].TankVoltage = PlcConvert.ToFloat(buffer, o + 28);
                     wells[i].ErrorCode = PlcConvert.ToUInt16(buffer, o + 32);
 
-                    Logger.Info($"===== WELL {i + 1} =====");
-                    Logger.Info($"RunMode        : {wells[i].RunMode}");
-                    Logger.Info($"Frequency      : {wells[i].Frequency}");
-                    Logger.Info($"ControlMode    : {wells[i].ControlMode}");
-                    Logger.Info($"BitCheck       : {wells[i].BitCheck}");
-                    Logger.Info($"WaterLevel     : {wells[i].WaterLevel}");
-                    Logger.Info($"Flow           : {wells[i].Flow}");
-                    Logger.Info($"TotalFlow      : {wells[i].TotalFlow}");
-                    Logger.Info($"TankFloatLevel : {wells[i].TankFloatLevel}");
-                    Logger.Info($"TankCurrent    : {wells[i].TankCurrent}");
-                    Logger.Info($"TankVoltage    : {wells[i].TankVoltage}");
-                    Logger.Info($"ErrorCode      : {wells[i].ErrorCode}");
-                    Logger.Info("");
+                   // Logger.Info($"===== WELL {i + 1} =====");
+                   // Logger.Info($"RunMode        : {wells[i].RunMode}");
+                   // Logger.Info($"Frequency      : {wells[i].Frequency}");
+                   // Logger.Info($"ControlMode    : {wells[i].ControlMode}");
+                   // Logger.Info($"BitCheck       : {wells[i].BitCheck}");
+                   // Logger.Info($"WaterLevel     : {wells[i].WaterLevel}");
+                   // Logger.Info($"Flow           : {wells[i].Flow}");
+                   // Logger.Info($"TotalFlow      : {wells[i].TotalFlow}");
+                   // Logger.Info($"TankFloatLevel : {wells[i].TankFloatLevel}");
+                   // Logger.Info($"TankCurrent    : {wells[i].TankCurrent}");
+                   // Logger.Info($"TankVoltage    : {wells[i].TankVoltage}");
+                   // Logger.Info($"ErrorCode      : {wells[i].ErrorCode}");
+                   // Logger.Info("");
 
                 }
 
@@ -1480,7 +1516,7 @@ namespace ScadaQTNN
             for (int i = 0; i < wellCount; i++)
                 Wells[i] = new WellStatus();
 
-            plc = new PlcService("192.168.1.18");
+            plc = new PlcService("192.168.1.8");
 
             if (plc.Connect())
             {
@@ -1592,6 +1628,17 @@ namespace ScadaQTNN
             _isReading = true;
             try
             {
+                bool connected = plc.IsConnected;
+                this.BeginInvoke((Action)(() => UpdateConnectionStatus(connected)));
+
+                if (!connected)
+                {
+                    // Giảm tần suất retry khi mất kết nối, không cần đọc data
+                    await Task.Delay(5000).ConfigureAwait(false);
+                    plc.EnsureConnected(); // thử reconnect
+                    return;
+                }
+
                 if (_readLoopCts == null)
                     _readLoopCts = new CancellationTokenSource();
 
@@ -3339,11 +3386,14 @@ namespace ScadaQTNN
         private void button24_Click(object sender, EventArgs e)
         {
             plc.WriteInt("DB28.DBW70", 1);
+
         }
 
         private void button27_Click(object sender, EventArgs e)
         {
             plc.WriteInt("DB28.DBW70", 2);
+            plc.WriteInt("DB28.DBW72", 2);
+            plc.WriteInt("DB28.DBW80", 2);
         }
         private void standardControl52_Load(object sender, EventArgs e)
         {
