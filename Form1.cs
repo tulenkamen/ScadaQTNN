@@ -362,13 +362,11 @@ namespace ScadaQTNN
 
         private string GetFaultText(ushort code)
         {
-            Logger.Info($"ErrorCode DEC: {code}");
-            Logger.Info($"ErrorCode HEX: 0x{code:X4}");
-
-            if (FaultMap.ContainsKey(code))
-                return FaultMap[code];
-
-            return $"UNKNOWN (0x{code:X4})";
+            if (code != 0)
+            {
+                Logger.Info($"ErrorCode DEC: {code}, HEX: 0x{code:X4}");
+            }
+            return FaultMap.TryGetValue(code, out var text) ? text : $"UNKNOWN (0x{code:X4})";
         }
 
         private void SetupAlarmGrid()
@@ -1479,31 +1477,6 @@ namespace ScadaQTNN
                 new SqlParameter("@WellId", wellId)
             );
         }
-
-        private void InsertWellAlarm(int wellId, ushort errorCode)
-        {
-
-            if (errorCode == 0) return;
-            string query = @"
-        INSERT INTO dbo.Well_Alarm
-        (WellId, ErrorCode, ErrorTime, Description, IsHandled)
-        VALUES
-        (@WellId, @ErrorCode, @ErrorTime, @Description, 0)";
-            try
-            {
-                ClassSQL.ExecuteNonQuery(query,
-                    new SqlParameter("@WellId", wellId),
-                    new SqlParameter("@ErrorCode", (int)errorCode),
-                    new SqlParameter("@ErrorTime", DateTime.Now),
-                    new SqlParameter("@Description", GetFaultText(errorCode))
-                );
-            }
-            catch (Exception ex)
-            {
-                ShowErrorOnce(ex.Message);
-            }
-        }
-
 
         #endregion
         private void Form1_Load(object sender, EventArgs e)
@@ -2783,7 +2756,7 @@ namespace ScadaQTNN
             comboBox33.Enabled = false;
             isEditting = false;
             button46.Visible = false;
-        }
+            }
             else
             {
                 button18.BackgroundImage = Properties.Resources._02_Tab_2Setting;
