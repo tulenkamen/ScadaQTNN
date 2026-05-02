@@ -797,7 +797,6 @@ namespace ScadaQTNN
             public byte[] ReadDBRange(int dbNumber, int start, int end)
             {
                 if (!EnsureConnected()) return null;
-                if (!_plc.IsConnected) return null;
                 int length = end - start + 1;
                 return (byte[])_plc.ReadBytes(DataType.DataBlock, dbNumber, start, length);
             }
@@ -1518,16 +1517,12 @@ namespace ScadaQTNN
 
             plc = new PlcService("192.168.1.8");
 
-            if (plc.Connect())
-            {
                 // Sử dụng timer designer (giữ logic UI lớn trong timer1_Tick)
                 timer1.Interval = 250;
                 timer1.Enabled = true;
 
                 // Nếu có _pollingService đã tạo, dừng/hủy nó:
                 _pollingService?.Stop();
-
-            }
             waterPanels = new Panel[]
             {
                 panel22, panel23, panel24, panel25, panel26, panel27, panel28, panel29, panel30, panel31, panel32
@@ -2371,7 +2366,9 @@ namespace ScadaQTNN
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
             );
-            if (Wells[4].ControlMode == 1 && comboBox21.SelectedItem?.ToString() == "REMOTE")
+            if (result == DialogResult.Yes)
+            {
+                if (Wells[4].ControlMode == 1 && comboBox21.SelectedItem?.ToString() == "REMOTE")
             {
                 plc.WriteInt("DB28.DBW40", 1); // Ghi xuống PLC
             }
@@ -2383,7 +2380,18 @@ namespace ScadaQTNN
             comboBox21.Enabled = false;
             isEditting = false;
             button40.Visible = false;
+            }
+            else
+            {
+                button12.BackgroundImage = Properties.Resources._02_Tab_2Setting;
+                comboBox21.Enabled = false;
+                isEditting = false;
+                button40.Visible = false;
+            }
         }
+
+
+
 
         private void button11_Click_1(object sender, EventArgs e) //RunModeButton
         {
@@ -2561,18 +2569,28 @@ namespace ScadaQTNN
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
             );
-            if (Wells[5].ControlMode == 1 && comboBox27.SelectedItem?.ToString() == "REMOTE")
+            if (result == DialogResult.Yes)
             {
-                plc.WriteInt("DB28.DBW50", 1); // Ghi xuống PLC
+                if (Wells[5].ControlMode == 1 && comboBox27.SelectedItem?.ToString() == "REMOTE")
+                {
+                    plc.WriteInt("DB28.DBW50", 1); // Ghi xuống PLC
+                }
+                else
+                {
+                    plc.WriteInt("DB28.DBW50", 2);
+                }
+                button15.BackgroundImage = Properties.Resources._02_Tab_2Setting;
+                comboBox27.Enabled = false;
+                isEditting = false;
+                button43.Visible = false;
             }
             else
             {
-                plc.WriteInt("DB28.DBW50", 2);
+                button15.BackgroundImage = Properties.Resources._02_Tab_2Setting;
+                comboBox27.Enabled = false;
+                isEditting = false;
+                button43.Visible = false;
             }
-            button15.BackgroundImage = Properties.Resources._02_Tab_2Setting;
-            comboBox27.Enabled = false;
-            isEditting = false;
-            button43.Visible = false;
         }
 
         private void button14_Click_1(object sender, EventArgs e) //RunModeButton
@@ -2750,7 +2768,10 @@ namespace ScadaQTNN
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
             );
-            if (Wells[6].ControlMode == 1 && comboBox33.SelectedItem?.ToString() == "REMOTE")
+
+            if (result == DialogResult.Yes)
+            {
+                if (Wells[6].ControlMode == 1 && comboBox33.SelectedItem?.ToString() == "REMOTE")
             {
                 plc.WriteInt("DB28.DBW60", 1); // Ghi xuống PLC
             }
@@ -2763,6 +2784,15 @@ namespace ScadaQTNN
             isEditting = false;
             button46.Visible = false;
         }
+            else
+            {
+                button18.BackgroundImage = Properties.Resources._02_Tab_2Setting;
+                comboBox33.Enabled = false;
+                isEditting = false;
+                button46.Visible = false;
+            }
+        }
+
 
         private void button17_Click_1(object sender, EventArgs e) //RunModeButton
         {
@@ -2941,18 +2971,28 @@ namespace ScadaQTNN
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
             );
-            if (Wells[0].ControlMode == 1 && comboBox39.SelectedItem?.ToString() == "REMOTE")
+            if (result == DialogResult.Yes)
             {
-                plc.WriteInt("DB28.DBW0", 1); // Ghi xuống PLC
+                if (Wells[0].ControlMode == 1 && comboBox39.SelectedItem?.ToString() == "REMOTE")
+                {
+                    plc.WriteInt("DB28.DBW0", 1); // Ghi xuống PLC
+                }
+                else
+                {
+                    plc.WriteInt("DB28.DBW0", 2);
+                }
+                button21.BackgroundImage = Properties.Resources._02_Tab_2Setting;
+                comboBox39.Enabled = false;
+                isEditting = false;
+                button49.Visible = false;
             }
             else
             {
-                plc.WriteInt("DB28.DBW0", 2);
+                button21.BackgroundImage = Properties.Resources._02_Tab_2Setting;
+                comboBox39.Enabled = false;
+                isEditting = false;
+                button49.Visible = false;
             }
-            button21.BackgroundImage = Properties.Resources._02_Tab_2Setting;
-            comboBox39.Enabled = false;
-            isEditting = false;
-            button49.Visible = false;
         }
 
         private void button20_Click_1(object sender, EventArgs e) //RunModeButton
@@ -3812,8 +3852,6 @@ namespace ScadaQTNN
 
         private void button57_Click(object sender, EventArgs e)
         {
-            InsertHistory(1, 50.2, 120.5, 3.6);
-            MessageBox.Show("Đã ghi dữ liệu");
         }
 
         private void button56_Click(object sender, EventArgs e)
