@@ -1239,6 +1239,14 @@ namespace ScadaQTNN
                 button25.Visible = true;
                 button22.Visible = true;
 
+                twoState(standardControl120, van1);
+                twoState(standardControl121, van2);
+                twoState(standardControl3, bomTankTG);
+                label109.Visible = bomTankTG;
+                label110.Visible = !bomTankTG;
+
+
+
                 switch (mode)
                 {
                     case 0:
@@ -1523,7 +1531,7 @@ namespace ScadaQTNN
             for (int i = 0; i < wellCount; i++)
                 Wells[i] = new WellStatus();
 
-            plc = new PlcService("192.168.24.254");
+            plc = new PlcService("192.168.0.144");
 
                 // Sử dụng timer designer (giữ logic UI lớn trong timer1_Tick)
                 timer1.Interval = 250;

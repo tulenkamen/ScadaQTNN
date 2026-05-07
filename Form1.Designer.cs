@@ -7043,7 +7043,7 @@ namespace ScadaQTNN
             this.label110.AutoSize = true;
             this.label110.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label110.ForeColor = System.Drawing.Color.Red;
-            this.label110.Location = new System.Drawing.Point(463, 518);
+            this.label110.Location = new System.Drawing.Point(462, 518);
             this.label110.Name = "label110";
             this.label110.Size = new System.Drawing.Size(41, 18);
             this.label110.TabIndex = 131;
