@@ -82,7 +82,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ClassSQL-OLD.txt" />
     <Compile Include="Logger.cs" />
     <Compile Include="PollingService.cs" />
     <Compile Include="ClassSQL.cs" />

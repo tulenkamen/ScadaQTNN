@@ -944,6 +944,41 @@ namespace ScadaQTNN
                     }
                 }
 
+                int offset316 = 316 - 296;
+                bool bit0 = false; bool bit1 = false;
+                bool bit2 = false; bool bit3 = false;
+                bool bit4 = false; bool bit5 = false;
+                bool bit6 = false; bool bit7 = false;
+                if (db5.Length > offset316)
+                {
+                    byte b316 = db5[offset316];
+
+                    bit0 = (b316 & (1 << 0)) != 0;
+                     bit1 = (b316 & (1 << 1)) != 0;
+                     bit2 = (b316 & (1 << 2)) != 0;
+                     bit3 = (b316 & (1 << 3)) != 0;
+                     bit4 = (b316 & (1 << 4)) != 0;
+                     bit5 = (b316 & (1 << 5)) != 0;
+                     bit6 = (b316 & (1 << 6)) != 0;
+                     bit7 = (b316 & (1 << 7)) != 0;
+                }
+
+                standardControl86.Visible = bit0;
+                standardControl82.Visible = bit1;
+                standardControl7.Visible = bit2;
+                standardControl85.Visible = bit2;
+                label108.Visible = bit2;
+                standardControl73.Visible = bit3;
+                standardControl74.Visible = bit4;
+                standardControl75.Visible = bit5;
+                standardControl76.Visible = bit6;
+                standardControl77.Visible = bit7;
+
+
+
+
+
+
                 // 4) Snapshot gồm wells copy + db5
                 var snapshot = new
                 {
@@ -1488,7 +1523,7 @@ namespace ScadaQTNN
             for (int i = 0; i < wellCount; i++)
                 Wells[i] = new WellStatus();
 
-            plc = new PlcService("192.168.1.8");
+            plc = new PlcService("192.168.24.254");
 
                 // Sử dụng timer designer (giữ logic UI lớn trong timer1_Tick)
                 timer1.Interval = 250;
@@ -3853,6 +3888,11 @@ namespace ScadaQTNN
             {
                 ShowErrorOnce(ex.Message);
             }
+        }
+
+        private void button59_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

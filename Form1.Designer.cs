@@ -34,6 +34,9 @@ namespace ScadaQTNN
             this.mainTabPanel = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.panel17 = new System.Windows.Forms.Panel();
+            this.standardControl86 = new SymbolFactoryDotNet.StandardControl();
+            this.label108 = new System.Windows.Forms.Label();
+            this.standardControl85 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl121 = new SymbolFactoryDotNet.StandardControl();
             this.panel20 = new System.Windows.Forms.Panel();
             this.label104 = new System.Windows.Forms.Label();
@@ -132,6 +135,7 @@ namespace ScadaQTNN
             this.button30 = new System.Windows.Forms.Button();
             this.button50 = new System.Windows.Forms.Button();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.standardControl82 = new SymbolFactoryDotNet.StandardControl();
             this.textBox50 = new System.Windows.Forms.TextBox();
             this.textBox49 = new System.Windows.Forms.TextBox();
             this.standardControl63 = new SymbolFactoryDotNet.StandardControl();
@@ -169,6 +173,7 @@ namespace ScadaQTNN
             this.standardControl58 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl59 = new SymbolFactoryDotNet.StandardControl();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.standardControl77 = new SymbolFactoryDotNet.StandardControl();
             this.textBox51 = new System.Windows.Forms.TextBox();
             this.textBox52 = new System.Windows.Forms.TextBox();
             this.standardControl52 = new SymbolFactoryDotNet.StandardControl();
@@ -206,6 +211,7 @@ namespace ScadaQTNN
             this.standardControl47 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl48 = new SymbolFactoryDotNet.StandardControl();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.standardControl76 = new SymbolFactoryDotNet.StandardControl();
             this.textBox54 = new System.Windows.Forms.TextBox();
             this.standardControl42 = new SymbolFactoryDotNet.StandardControl();
             this.textBox53 = new System.Windows.Forms.TextBox();
@@ -243,6 +249,7 @@ namespace ScadaQTNN
             this.standardControl40 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl41 = new SymbolFactoryDotNet.StandardControl();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.standardControl75 = new SymbolFactoryDotNet.StandardControl();
             this.textBox56 = new System.Windows.Forms.TextBox();
             this.textBox55 = new System.Windows.Forms.TextBox();
             this.standardControl32 = new SymbolFactoryDotNet.StandardControl();
@@ -280,6 +287,7 @@ namespace ScadaQTNN
             this.standardControl29 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl30 = new SymbolFactoryDotNet.StandardControl();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.standardControl74 = new SymbolFactoryDotNet.StandardControl();
             this.textBox62 = new System.Windows.Forms.TextBox();
             this.textBox61 = new System.Windows.Forms.TextBox();
             this.standardControl22 = new SymbolFactoryDotNet.StandardControl();
@@ -317,6 +325,7 @@ namespace ScadaQTNN
             this.standardControl20 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl21 = new SymbolFactoryDotNet.StandardControl();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.standardControl73 = new SymbolFactoryDotNet.StandardControl();
             this.textBox60 = new System.Windows.Forms.TextBox();
             this.textBox59 = new System.Windows.Forms.TextBox();
             this.standardControl10 = new SymbolFactoryDotNet.StandardControl();
@@ -427,9 +436,32 @@ namespace ScadaQTNN
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.button58 = new System.Windows.Forms.Button();
+            this.button59 = new System.Windows.Forms.Button();
+            this.label109 = new System.Windows.Forms.Label();
+            this.label110 = new System.Windows.Forms.Label();
+            this.panel36 = new System.Windows.Forms.Panel();
+            this.label111 = new System.Windows.Forms.Label();
+            this.panel37 = new System.Windows.Forms.Panel();
+            this.dataGridView2 = new System.Windows.Forms.DataGridView();
+            this.panel38 = new System.Windows.Forms.Panel();
+            this.label112 = new System.Windows.Forms.Label();
+            this.panel39 = new System.Windows.Forms.Panel();
+            this.dataGridView3 = new System.Windows.Forms.DataGridView();
+            this.label113 = new System.Windows.Forms.Label();
+            this.label114 = new System.Windows.Forms.Label();
+            this.label115 = new System.Windows.Forms.Label();
+            this.label116 = new System.Windows.Forms.Label();
+            this.label117 = new System.Windows.Forms.Label();
+            this.label118 = new System.Windows.Forms.Label();
+            this.label119 = new System.Windows.Forms.Label();
             this.mainTabPanel.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.panel17.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl86)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl85)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl121)).BeginInit();
             this.panel20.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl3)).BeginInit();
@@ -470,6 +502,7 @@ namespace ScadaQTNN
             this.panel1.SuspendLayout();
             this.panel21.SuspendLayout();
             this.groupBox7.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl82)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl63)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl78)).BeginInit();
             this.panel15.SuspendLayout();
@@ -480,6 +513,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl58)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl59)).BeginInit();
             this.groupBox6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl77)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl52)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl53)).BeginInit();
             this.panel13.SuspendLayout();
@@ -490,6 +524,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl47)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl48)).BeginInit();
             this.groupBox5.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl76)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl42)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl43)).BeginInit();
             this.panel11.SuspendLayout();
@@ -500,6 +535,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl40)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl41)).BeginInit();
             this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl75)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl32)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl33)).BeginInit();
             this.panel9.SuspendLayout();
@@ -510,6 +546,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl29)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl30)).BeginInit();
             this.groupBox3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl74)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl22)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl23)).BeginInit();
             this.panel7.SuspendLayout();
@@ -520,6 +557,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl20)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl21)).BeginInit();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl73)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl10)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl11)).BeginInit();
             this.panel5.SuspendLayout();
@@ -568,12 +606,22 @@ namespace ScadaQTNN
             this.panel33.SuspendLayout();
             this.panel34.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
+            this.panel36.SuspendLayout();
+            this.panel37.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
+            this.panel38.SuspendLayout();
+            this.panel39.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView3)).BeginInit();
             this.SuspendLayout();
             // 
             // mainTabPanel
             // 
             this.mainTabPanel.Controls.Add(this.tabPage1);
             this.mainTabPanel.Controls.Add(this.tabPage2);
+            this.mainTabPanel.Controls.Add(this.tabPage3);
+            this.mainTabPanel.Controls.Add(this.tabPage4);
             this.mainTabPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainTabPanel.ImageList = this.tabIcons;
             this.mainTabPanel.ItemSize = new System.Drawing.Size(75, 50);
@@ -601,8 +649,12 @@ namespace ScadaQTNN
             // 
             // panel17
             // 
+            this.panel17.Controls.Add(this.label110);
+            this.panel17.Controls.Add(this.label109);
+            this.panel17.Controls.Add(this.standardControl86);
+            this.panel17.Controls.Add(this.label108);
+            this.panel17.Controls.Add(this.standardControl85);
             this.panel17.Controls.Add(this.standardControl121);
-            this.panel17.Controls.Add(this.panel20);
             this.panel17.Controls.Add(this.label92);
             this.panel17.Controls.Add(this.panel31);
             this.panel17.Controls.Add(this.panel32);
@@ -669,6 +721,61 @@ namespace ScadaQTNN
             this.panel17.TabIndex = 54;
             this.panel17.Paint += new System.Windows.Forms.PaintEventHandler(this.panel17_Paint);
             // 
+            // standardControl86
+            // 
+            this.standardControl86.AnalogIntValue1 = ((short)(0));
+            this.standardControl86.AnalogValue1 = 0D;
+            this.standardControl86.AnimationMode = SymbolFactoryNetEngine.AnimationModeOptions.DiscreteColorFill;
+            this.standardControl86.BackColor = System.Drawing.Color.Transparent;
+            this.standardControl86.BackStyle = SymbolFactoryNetEngine.BackStyleOptions.Transparent;
+            this.standardControl86.BandsCollection.Add(new SymbolFactoryNetEngine.Band(0D, 0, false, SymbolFactoryNetEngine.BandStyleOptions.Original, System.Drawing.Color.Red, "Band1"));
+            this.standardControl86.BlinkColor = System.Drawing.Color.Red;
+            this.standardControl86.BlinkMode = SymbolFactoryNetEngine.BlinkModeOptions.Shaded;
+            this.standardControl86.BlinkSpeed = SymbolFactoryNetEngine.BlinkSpeedOptions.Fast_400;
+            this.standardControl86.Category = "1INTL.cat2";
+            this.standardControl86.DebugData = new SymbolFactoryDotNet.DebugClass(resources.GetString("standardControl86.DebugData"));
+            this.standardControl86.FillColor = System.Drawing.Color.White;
+            this.standardControl86.Location = new System.Drawing.Point(269, 682);
+            this.standardControl86.Name = "standardControl86";
+            this.standardControl86.Size = new System.Drawing.Size(142, 111);
+            this.standardControl86.SymbolHandle = ((long)(935387866));
+            this.standardControl86.TabIndex = 129;
+            this.standardControl86.Visible = false;
+            // 
+            // label108
+            // 
+            this.label108.AutoSize = true;
+            this.label108.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label108.ForeColor = System.Drawing.Color.Red;
+            this.label108.Location = new System.Drawing.Point(23, 610);
+            this.label108.Name = "label108";
+            this.label108.Size = new System.Drawing.Size(97, 36);
+            this.label108.TabIndex = 128;
+            this.label108.Text = "MỨC PHAO\r\nERROR";
+            this.label108.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.label108.Visible = false;
+            // 
+            // standardControl85
+            // 
+            this.standardControl85.AnalogIntValue1 = ((short)(0));
+            this.standardControl85.AnalogValue1 = 0D;
+            this.standardControl85.AnimationMode = SymbolFactoryNetEngine.AnimationModeOptions.DiscreteColorFill;
+            this.standardControl85.BackColor = System.Drawing.Color.Transparent;
+            this.standardControl85.BackStyle = SymbolFactoryNetEngine.BackStyleOptions.Transparent;
+            this.standardControl85.BandsCollection.Add(new SymbolFactoryNetEngine.Band(0D, 0, false, SymbolFactoryNetEngine.BandStyleOptions.Original, System.Drawing.Color.Red, "Band1"));
+            this.standardControl85.BlinkColor = System.Drawing.Color.Red;
+            this.standardControl85.BlinkMode = SymbolFactoryNetEngine.BlinkModeOptions.Shaded;
+            this.standardControl85.BlinkSpeed = SymbolFactoryNetEngine.BlinkSpeedOptions.Fast_400;
+            this.standardControl85.Category = "1INTL.cat2";
+            this.standardControl85.DebugData = new SymbolFactoryDotNet.DebugClass(resources.GetString("standardControl85.DebugData"));
+            this.standardControl85.FillColor = System.Drawing.Color.White;
+            this.standardControl85.Location = new System.Drawing.Point(10, 523);
+            this.standardControl85.Name = "standardControl85";
+            this.standardControl85.Size = new System.Drawing.Size(118, 84);
+            this.standardControl85.SymbolHandle = ((long)(935387866));
+            this.standardControl85.TabIndex = 127;
+            this.standardControl85.Visible = false;
+            // 
             // standardControl121
             // 
             this.standardControl121.AnalogIntValue1 = ((short)(0));
@@ -693,13 +800,14 @@ namespace ScadaQTNN
             // 
             this.panel20.BackColor = System.Drawing.Color.Gainsboro;
             this.panel20.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel20.Controls.Add(this.button59);
             this.panel20.Controls.Add(this.label104);
             this.panel20.Controls.Add(this.button27);
             this.panel20.Controls.Add(this.button24);
             this.panel20.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.panel20.Location = new System.Drawing.Point(10, 776);
+            this.panel20.Location = new System.Drawing.Point(838, 419);
             this.panel20.Name = "panel20";
-            this.panel20.Size = new System.Drawing.Size(96, 124);
+            this.panel20.Size = new System.Drawing.Size(262, 98);
             this.panel20.TabIndex = 125;
             // 
             // label104
@@ -707,7 +815,7 @@ namespace ScadaQTNN
             this.label104.AutoSize = true;
             this.label104.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label104.ForeColor = System.Drawing.Color.Navy;
-            this.label104.Location = new System.Drawing.Point(2, 6);
+            this.label104.Location = new System.Drawing.Point(80, 5);
             this.label104.Name = "label104";
             this.label104.Size = new System.Drawing.Size(92, 16);
             this.label104.TabIndex = 73;
@@ -721,12 +829,12 @@ namespace ScadaQTNN
             this.button27.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button27.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button27.ForeColor = System.Drawing.Color.Black;
-            this.button27.Location = new System.Drawing.Point(8, 44);
+            this.button27.Location = new System.Drawing.Point(17, 35);
             this.button27.Margin = new System.Windows.Forms.Padding(0);
             this.button27.Name = "button27";
-            this.button27.Size = new System.Drawing.Size(80, 53);
+            this.button27.Size = new System.Drawing.Size(110, 44);
             this.button27.TabIndex = 49;
-            this.button27.Text = "OFF REMOTE";
+            this.button27.Text = "TANK \r\nOFF REMOTE";
             this.button27.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this.button27.UseVisualStyleBackColor = false;
             this.button27.Visible = false;
@@ -740,12 +848,12 @@ namespace ScadaQTNN
             this.button24.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button24.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button24.ForeColor = System.Drawing.Color.Black;
-            this.button24.Location = new System.Drawing.Point(8, 44);
+            this.button24.Location = new System.Drawing.Point(17, 35);
             this.button24.Margin = new System.Windows.Forms.Padding(0);
             this.button24.Name = "button24";
-            this.button24.Size = new System.Drawing.Size(80, 53);
+            this.button24.Size = new System.Drawing.Size(110, 44);
             this.button24.TabIndex = 48;
-            this.button24.Text = "REMOTE";
+            this.button24.Text = "TANK\r\nREMOTE";
             this.button24.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this.button24.UseVisualStyleBackColor = false;
             this.button24.Click += new System.EventHandler(this.button24_Click);
@@ -802,7 +910,7 @@ namespace ScadaQTNN
             this.label103.AutoSize = true;
             this.label103.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label103.ForeColor = System.Drawing.Color.Navy;
-            this.label103.Location = new System.Drawing.Point(391, 388);
+            this.label103.Location = new System.Drawing.Point(401, 414);
             this.label103.Name = "label103";
             this.label103.Size = new System.Drawing.Size(154, 36);
             this.label103.TabIndex = 122;
@@ -822,7 +930,7 @@ namespace ScadaQTNN
             this.standardControl3.DebugData = new SymbolFactoryDotNet.DebugClass(resources.GetString("standardControl3.DebugData"));
             this.standardControl3.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
             this.standardControl3.Flip = SymbolFactoryNetEngine.FlipOptions.Horizontal;
-            this.standardControl3.Location = new System.Drawing.Point(441, 429);
+            this.standardControl3.Location = new System.Drawing.Point(451, 455);
             this.standardControl3.Name = "standardControl3";
             this.standardControl3.Size = new System.Drawing.Size(60, 60);
             this.standardControl3.SymbolHandle = ((long)(2528572));
@@ -2140,10 +2248,12 @@ namespace ScadaQTNN
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.button58);
             this.panel1.Controls.Add(this.panel21);
             this.panel1.Controls.Add(this.groupBox7);
             this.panel1.Controls.Add(this.groupBox6);
             this.panel1.Controls.Add(this.groupBox5);
+            this.panel1.Controls.Add(this.panel20);
             this.panel1.Controls.Add(this.groupBox4);
             this.panel1.Controls.Add(this.groupBox3);
             this.panel1.Controls.Add(this.groupBox2);
@@ -2186,7 +2296,7 @@ namespace ScadaQTNN
             this.panel21.Controls.Add(this.button30);
             this.panel21.Controls.Add(this.button50);
             this.panel21.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.panel21.Location = new System.Drawing.Point(869, 426);
+            this.panel21.Location = new System.Drawing.Point(613, 419);
             this.panel21.Name = "panel21";
             this.panel21.Size = new System.Drawing.Size(198, 98);
             this.panel21.TabIndex = 126;
@@ -2261,6 +2371,7 @@ namespace ScadaQTNN
             // groupBox7
             // 
             this.groupBox7.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.groupBox7.Controls.Add(this.standardControl82);
             this.groupBox7.Controls.Add(this.textBox50);
             this.groupBox7.Controls.Add(this.textBox49);
             this.groupBox7.Controls.Add(this.standardControl63);
@@ -2281,6 +2392,27 @@ namespace ScadaQTNN
             this.groupBox7.TabIndex = 71;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "GIẾNG NL.08";
+            // 
+            // standardControl82
+            // 
+            this.standardControl82.AnalogIntValue1 = ((short)(0));
+            this.standardControl82.AnalogValue1 = 0D;
+            this.standardControl82.AnimationMode = SymbolFactoryNetEngine.AnimationModeOptions.DiscreteColorFill;
+            this.standardControl82.BackColor = System.Drawing.Color.Transparent;
+            this.standardControl82.BackStyle = SymbolFactoryNetEngine.BackStyleOptions.Transparent;
+            this.standardControl82.BandsCollection.Add(new SymbolFactoryNetEngine.Band(0D, 0, false, SymbolFactoryNetEngine.BandStyleOptions.Original, System.Drawing.Color.Red, "Band1"));
+            this.standardControl82.BlinkColor = System.Drawing.Color.Red;
+            this.standardControl82.BlinkMode = SymbolFactoryNetEngine.BlinkModeOptions.Shaded;
+            this.standardControl82.BlinkSpeed = SymbolFactoryNetEngine.BlinkSpeedOptions.Fast_400;
+            this.standardControl82.Category = "1INTL.cat2";
+            this.standardControl82.DebugData = new SymbolFactoryDotNet.DebugClass(resources.GetString("standardControl82.DebugData"));
+            this.standardControl82.FillColor = System.Drawing.Color.White;
+            this.standardControl82.Location = new System.Drawing.Point(37, 27);
+            this.standardControl82.Name = "standardControl82";
+            this.standardControl82.Size = new System.Drawing.Size(118, 84);
+            this.standardControl82.SymbolHandle = ((long)(935387866));
+            this.standardControl82.TabIndex = 89;
+            this.standardControl82.Visible = false;
             // 
             // textBox50
             // 
@@ -2805,6 +2937,7 @@ namespace ScadaQTNN
             // groupBox6
             // 
             this.groupBox6.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.groupBox6.Controls.Add(this.standardControl77);
             this.groupBox6.Controls.Add(this.textBox51);
             this.groupBox6.Controls.Add(this.textBox52);
             this.groupBox6.Controls.Add(this.standardControl52);
@@ -2825,6 +2958,27 @@ namespace ScadaQTNN
             this.groupBox6.TabIndex = 70;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "GIẾNG NL.07";
+            // 
+            // standardControl77
+            // 
+            this.standardControl77.AnalogIntValue1 = ((short)(0));
+            this.standardControl77.AnalogValue1 = 0D;
+            this.standardControl77.AnimationMode = SymbolFactoryNetEngine.AnimationModeOptions.DiscreteColorFill;
+            this.standardControl77.BackColor = System.Drawing.Color.Transparent;
+            this.standardControl77.BackStyle = SymbolFactoryNetEngine.BackStyleOptions.Transparent;
+            this.standardControl77.BandsCollection.Add(new SymbolFactoryNetEngine.Band(0D, 0, false, SymbolFactoryNetEngine.BandStyleOptions.Original, System.Drawing.Color.Red, "Band1"));
+            this.standardControl77.BlinkColor = System.Drawing.Color.Red;
+            this.standardControl77.BlinkMode = SymbolFactoryNetEngine.BlinkModeOptions.Shaded;
+            this.standardControl77.BlinkSpeed = SymbolFactoryNetEngine.BlinkSpeedOptions.Fast_400;
+            this.standardControl77.Category = "1INTL.cat2";
+            this.standardControl77.DebugData = new SymbolFactoryDotNet.DebugClass(resources.GetString("standardControl77.DebugData"));
+            this.standardControl77.FillColor = System.Drawing.Color.White;
+            this.standardControl77.Location = new System.Drawing.Point(34, 27);
+            this.standardControl77.Name = "standardControl77";
+            this.standardControl77.Size = new System.Drawing.Size(118, 84);
+            this.standardControl77.SymbolHandle = ((long)(935387866));
+            this.standardControl77.TabIndex = 86;
+            this.standardControl77.Visible = false;
             // 
             // textBox51
             // 
@@ -3350,6 +3504,7 @@ namespace ScadaQTNN
             // groupBox5
             // 
             this.groupBox5.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.groupBox5.Controls.Add(this.standardControl76);
             this.groupBox5.Controls.Add(this.textBox54);
             this.groupBox5.Controls.Add(this.standardControl42);
             this.groupBox5.Controls.Add(this.textBox53);
@@ -3370,6 +3525,27 @@ namespace ScadaQTNN
             this.groupBox5.TabIndex = 69;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "GIẾNG NL.06";
+            // 
+            // standardControl76
+            // 
+            this.standardControl76.AnalogIntValue1 = ((short)(0));
+            this.standardControl76.AnalogValue1 = 0D;
+            this.standardControl76.AnimationMode = SymbolFactoryNetEngine.AnimationModeOptions.DiscreteColorFill;
+            this.standardControl76.BackColor = System.Drawing.Color.Transparent;
+            this.standardControl76.BackStyle = SymbolFactoryNetEngine.BackStyleOptions.Transparent;
+            this.standardControl76.BandsCollection.Add(new SymbolFactoryNetEngine.Band(0D, 0, false, SymbolFactoryNetEngine.BandStyleOptions.Original, System.Drawing.Color.Red, "Band1"));
+            this.standardControl76.BlinkColor = System.Drawing.Color.Red;
+            this.standardControl76.BlinkMode = SymbolFactoryNetEngine.BlinkModeOptions.Shaded;
+            this.standardControl76.BlinkSpeed = SymbolFactoryNetEngine.BlinkSpeedOptions.Fast_400;
+            this.standardControl76.Category = "1INTL.cat2";
+            this.standardControl76.DebugData = new SymbolFactoryDotNet.DebugClass(resources.GetString("standardControl76.DebugData"));
+            this.standardControl76.FillColor = System.Drawing.Color.White;
+            this.standardControl76.Location = new System.Drawing.Point(59, 27);
+            this.standardControl76.Name = "standardControl76";
+            this.standardControl76.Size = new System.Drawing.Size(118, 84);
+            this.standardControl76.SymbolHandle = ((long)(935387866));
+            this.standardControl76.TabIndex = 83;
+            this.standardControl76.Visible = false;
             // 
             // textBox54
             // 
@@ -3894,6 +4070,7 @@ namespace ScadaQTNN
             // groupBox4
             // 
             this.groupBox4.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.groupBox4.Controls.Add(this.standardControl75);
             this.groupBox4.Controls.Add(this.textBox56);
             this.groupBox4.Controls.Add(this.textBox55);
             this.groupBox4.Controls.Add(this.standardControl32);
@@ -3914,6 +4091,27 @@ namespace ScadaQTNN
             this.groupBox4.TabIndex = 68;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "GIẾNG NL.05";
+            // 
+            // standardControl75
+            // 
+            this.standardControl75.AnalogIntValue1 = ((short)(0));
+            this.standardControl75.AnalogValue1 = 0D;
+            this.standardControl75.AnimationMode = SymbolFactoryNetEngine.AnimationModeOptions.DiscreteColorFill;
+            this.standardControl75.BackColor = System.Drawing.Color.Transparent;
+            this.standardControl75.BackStyle = SymbolFactoryNetEngine.BackStyleOptions.Transparent;
+            this.standardControl75.BandsCollection.Add(new SymbolFactoryNetEngine.Band(0D, 0, false, SymbolFactoryNetEngine.BandStyleOptions.Original, System.Drawing.Color.Red, "Band1"));
+            this.standardControl75.BlinkColor = System.Drawing.Color.Red;
+            this.standardControl75.BlinkMode = SymbolFactoryNetEngine.BlinkModeOptions.Shaded;
+            this.standardControl75.BlinkSpeed = SymbolFactoryNetEngine.BlinkSpeedOptions.Fast_400;
+            this.standardControl75.Category = "1INTL.cat2";
+            this.standardControl75.DebugData = new SymbolFactoryDotNet.DebugClass(resources.GetString("standardControl75.DebugData"));
+            this.standardControl75.FillColor = System.Drawing.Color.White;
+            this.standardControl75.Location = new System.Drawing.Point(59, 25);
+            this.standardControl75.Name = "standardControl75";
+            this.standardControl75.Size = new System.Drawing.Size(118, 84);
+            this.standardControl75.SymbolHandle = ((long)(935387866));
+            this.standardControl75.TabIndex = 80;
+            this.standardControl75.Visible = false;
             // 
             // textBox56
             // 
@@ -4437,6 +4635,7 @@ namespace ScadaQTNN
             // groupBox3
             // 
             this.groupBox3.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.groupBox3.Controls.Add(this.standardControl74);
             this.groupBox3.Controls.Add(this.textBox62);
             this.groupBox3.Controls.Add(this.textBox61);
             this.groupBox3.Controls.Add(this.standardControl22);
@@ -4457,6 +4656,27 @@ namespace ScadaQTNN
             this.groupBox3.TabIndex = 67;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "GIẾNG NL.04";
+            // 
+            // standardControl74
+            // 
+            this.standardControl74.AnalogIntValue1 = ((short)(0));
+            this.standardControl74.AnalogValue1 = 0D;
+            this.standardControl74.AnimationMode = SymbolFactoryNetEngine.AnimationModeOptions.DiscreteColorFill;
+            this.standardControl74.BackColor = System.Drawing.Color.Transparent;
+            this.standardControl74.BackStyle = SymbolFactoryNetEngine.BackStyleOptions.Transparent;
+            this.standardControl74.BandsCollection.Add(new SymbolFactoryNetEngine.Band(0D, 0, false, SymbolFactoryNetEngine.BandStyleOptions.Original, System.Drawing.Color.Red, "Band1"));
+            this.standardControl74.BlinkColor = System.Drawing.Color.Red;
+            this.standardControl74.BlinkMode = SymbolFactoryNetEngine.BlinkModeOptions.Shaded;
+            this.standardControl74.BlinkSpeed = SymbolFactoryNetEngine.BlinkSpeedOptions.Fast_400;
+            this.standardControl74.Category = "1INTL.cat2";
+            this.standardControl74.DebugData = new SymbolFactoryDotNet.DebugClass(resources.GetString("standardControl74.DebugData"));
+            this.standardControl74.FillColor = System.Drawing.Color.White;
+            this.standardControl74.Location = new System.Drawing.Point(37, 25);
+            this.standardControl74.Name = "standardControl74";
+            this.standardControl74.Size = new System.Drawing.Size(118, 84);
+            this.standardControl74.SymbolHandle = ((long)(935387866));
+            this.standardControl74.TabIndex = 80;
+            this.standardControl74.Visible = false;
             // 
             // textBox62
             // 
@@ -4981,6 +5201,7 @@ namespace ScadaQTNN
             // groupBox2
             // 
             this.groupBox2.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.groupBox2.Controls.Add(this.standardControl73);
             this.groupBox2.Controls.Add(this.textBox60);
             this.groupBox2.Controls.Add(this.textBox59);
             this.groupBox2.Controls.Add(this.standardControl10);
@@ -5001,6 +5222,27 @@ namespace ScadaQTNN
             this.groupBox2.TabIndex = 66;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "GIẾNG NL.03";
+            // 
+            // standardControl73
+            // 
+            this.standardControl73.AnalogIntValue1 = ((short)(0));
+            this.standardControl73.AnalogValue1 = 0D;
+            this.standardControl73.AnimationMode = SymbolFactoryNetEngine.AnimationModeOptions.DiscreteColorFill;
+            this.standardControl73.BackColor = System.Drawing.Color.Transparent;
+            this.standardControl73.BackStyle = SymbolFactoryNetEngine.BackStyleOptions.Transparent;
+            this.standardControl73.BandsCollection.Add(new SymbolFactoryNetEngine.Band(0D, 0, false, SymbolFactoryNetEngine.BandStyleOptions.Original, System.Drawing.Color.Red, "Band1"));
+            this.standardControl73.BlinkColor = System.Drawing.Color.Red;
+            this.standardControl73.BlinkMode = SymbolFactoryNetEngine.BlinkModeOptions.Shaded;
+            this.standardControl73.BlinkSpeed = SymbolFactoryNetEngine.BlinkSpeedOptions.Fast_400;
+            this.standardControl73.Category = "1INTL.cat2";
+            this.standardControl73.DebugData = new SymbolFactoryDotNet.DebugClass(resources.GetString("standardControl73.DebugData"));
+            this.standardControl73.FillColor = System.Drawing.Color.White;
+            this.standardControl73.Location = new System.Drawing.Point(33, 25);
+            this.standardControl73.Name = "standardControl73";
+            this.standardControl73.Size = new System.Drawing.Size(118, 84);
+            this.standardControl73.SymbolHandle = ((long)(935387866));
+            this.standardControl73.TabIndex = 83;
+            this.standardControl73.Visible = false;
             // 
             // textBox60
             // 
@@ -5709,9 +5951,9 @@ namespace ScadaQTNN
             this.standardControl7.Category = "1INTL.cat2";
             this.standardControl7.DebugData = new SymbolFactoryDotNet.DebugClass(resources.GetString("standardControl7.DebugData"));
             this.standardControl7.FillColor = System.Drawing.Color.White;
-            this.standardControl7.Location = new System.Drawing.Point(85, 31);
+            this.standardControl7.Location = new System.Drawing.Point(59, 21);
             this.standardControl7.Name = "standardControl7";
-            this.standardControl7.Size = new System.Drawing.Size(69, 65);
+            this.standardControl7.Size = new System.Drawing.Size(118, 84);
             this.standardControl7.SymbolHandle = ((long)(935387866));
             this.standardControl7.TabIndex = 42;
             this.standardControl7.Visible = false;
@@ -6588,6 +6830,7 @@ namespace ScadaQTNN
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPage2.Controls.Add(this.label119);
             this.tabPage2.Controls.Add(this.panel35);
             this.tabPage2.Controls.Add(this.panel33);
             this.tabPage2.Controls.Add(this.panel34);
@@ -6660,9 +6903,9 @@ namespace ScadaQTNN
             this.label106.ForeColor = System.Drawing.Color.Navy;
             this.label106.Location = new System.Drawing.Point(34, 5);
             this.label106.Name = "label106";
-            this.label106.Size = new System.Drawing.Size(67, 16);
+            this.label106.Size = new System.Drawing.Size(131, 16);
             this.label106.TabIndex = 73;
-            this.label106.Text = "GHI SQL";
+            this.label106.Text = "CHỌN THỜI GIAN";
             // 
             // button57
             // 
@@ -6716,6 +6959,257 @@ namespace ScadaQTNN
             this.timer1.Interval = 250;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // tabPage3
+            // 
+            this.tabPage3.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPage3.Controls.Add(this.label117);
+            this.tabPage3.Controls.Add(this.label116);
+            this.tabPage3.Controls.Add(this.label115);
+            this.tabPage3.Controls.Add(this.label113);
+            this.tabPage3.Controls.Add(this.panel36);
+            this.tabPage3.Controls.Add(this.panel37);
+            this.tabPage3.ImageIndex = 2;
+            this.tabPage3.Location = new System.Drawing.Point(4, 54);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(1896, 983);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "DATA";
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPage4.Controls.Add(this.panel38);
+            this.tabPage4.Controls.Add(this.panel39);
+            this.tabPage4.ImageIndex = 1;
+            this.tabPage4.Location = new System.Drawing.Point(4, 54);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(1896, 983);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "SETTINGS";
+            // 
+            // button58
+            // 
+            this.button58.AllowDrop = true;
+            this.button58.BackColor = System.Drawing.Color.Yellow;
+            this.button58.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button58.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button58.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button58.ForeColor = System.Drawing.Color.Black;
+            this.button58.Location = new System.Drawing.Point(1088, 460);
+            this.button58.Margin = new System.Windows.Forms.Padding(0);
+            this.button58.Name = "button58";
+            this.button58.Size = new System.Drawing.Size(110, 44);
+            this.button58.TabIndex = 75;
+            this.button58.Text = "GIẾNG \r\nOFF REMOTE";
+            this.button58.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.button58.UseVisualStyleBackColor = false;
+            this.button58.Visible = false;
+            // 
+            // button59
+            // 
+            this.button59.AllowDrop = true;
+            this.button59.BackColor = System.Drawing.Color.MediumAquamarine;
+            this.button59.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button59.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button59.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button59.ForeColor = System.Drawing.Color.Black;
+            this.button59.Location = new System.Drawing.Point(135, 35);
+            this.button59.Margin = new System.Windows.Forms.Padding(0);
+            this.button59.Name = "button59";
+            this.button59.Size = new System.Drawing.Size(110, 44);
+            this.button59.TabIndex = 74;
+            this.button59.Text = "GIẾNG \r\nON REMOTE";
+            this.button59.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.button59.UseVisualStyleBackColor = false;
+            this.button59.Click += new System.EventHandler(this.button59_Click);
+            // 
+            // label109
+            // 
+            this.label109.AutoSize = true;
+            this.label109.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label109.ForeColor = System.Drawing.Color.Lime;
+            this.label109.Location = new System.Drawing.Point(466, 518);
+            this.label109.Name = "label109";
+            this.label109.Size = new System.Drawing.Size(33, 18);
+            this.label109.TabIndex = 130;
+            this.label109.Text = "ON";
+            this.label109.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label109.Visible = false;
+            // 
+            // label110
+            // 
+            this.label110.AutoSize = true;
+            this.label110.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label110.ForeColor = System.Drawing.Color.Red;
+            this.label110.Location = new System.Drawing.Point(463, 518);
+            this.label110.Name = "label110";
+            this.label110.Size = new System.Drawing.Size(41, 18);
+            this.label110.TabIndex = 131;
+            this.label110.Text = "OFF";
+            this.label110.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label110.Visible = false;
+            // 
+            // panel36
+            // 
+            this.panel36.BackColor = System.Drawing.Color.Silver;
+            this.panel36.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel36.Controls.Add(this.label111);
+            this.panel36.Location = new System.Drawing.Point(8, 4);
+            this.panel36.Name = "panel36";
+            this.panel36.Size = new System.Drawing.Size(1882, 69);
+            this.panel36.TabIndex = 131;
+            // 
+            // label111
+            // 
+            this.label111.AutoSize = true;
+            this.label111.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label111.ForeColor = System.Drawing.Color.Navy;
+            this.label111.Location = new System.Drawing.Point(562, 5);
+            this.label111.Name = "label111";
+            this.label111.Size = new System.Drawing.Size(848, 58);
+            this.label111.TabIndex = 1;
+            this.label111.Text = "HỆ THỐNG QUAN TRẮC KHAI THÁC NƯỚC NGẦM NHÀ MÁY NÚI TIÊN\r\nDỮ LIỆU QUAN TRẮC";
+            this.label111.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panel37
+            // 
+            this.panel37.Controls.Add(this.label118);
+            this.panel37.Controls.Add(this.label114);
+            this.panel37.Controls.Add(this.dataGridView2);
+            this.panel37.Location = new System.Drawing.Point(8, 79);
+            this.panel37.Name = "panel37";
+            this.panel37.Size = new System.Drawing.Size(1880, 688);
+            this.panel37.TabIndex = 130;
+            // 
+            // dataGridView2
+            // 
+            this.dataGridView2.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridView2.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.dataGridView2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView2.Location = new System.Drawing.Point(34, 14);
+            this.dataGridView2.Name = "dataGridView2";
+            this.dataGridView2.Size = new System.Drawing.Size(1746, 671);
+            this.dataGridView2.TabIndex = 0;
+            // 
+            // panel38
+            // 
+            this.panel38.BackColor = System.Drawing.Color.Silver;
+            this.panel38.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel38.Controls.Add(this.label112);
+            this.panel38.Location = new System.Drawing.Point(8, 4);
+            this.panel38.Name = "panel38";
+            this.panel38.Size = new System.Drawing.Size(1882, 69);
+            this.panel38.TabIndex = 131;
+            // 
+            // label112
+            // 
+            this.label112.AutoSize = true;
+            this.label112.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label112.ForeColor = System.Drawing.Color.Navy;
+            this.label112.Location = new System.Drawing.Point(562, 5);
+            this.label112.Name = "label112";
+            this.label112.Size = new System.Drawing.Size(848, 58);
+            this.label112.TabIndex = 1;
+            this.label112.Text = "HỆ THỐNG QUAN TRẮC KHAI THÁC NƯỚC NGẦM NHÀ MÁY NÚI TIÊN\r\nCẤU HÌNH HỆ THỐNG";
+            this.label112.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panel39
+            // 
+            this.panel39.Controls.Add(this.dataGridView3);
+            this.panel39.Location = new System.Drawing.Point(8, 79);
+            this.panel39.Name = "panel39";
+            this.panel39.Size = new System.Drawing.Size(1880, 688);
+            this.panel39.TabIndex = 130;
+            // 
+            // dataGridView3
+            // 
+            this.dataGridView3.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridView3.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.dataGridView3.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView3.Location = new System.Drawing.Point(34, 14);
+            this.dataGridView3.Name = "dataGridView3";
+            this.dataGridView3.Size = new System.Drawing.Size(1746, 671);
+            this.dataGridView3.TabIndex = 0;
+            // 
+            // label113
+            // 
+            this.label113.AutoSize = true;
+            this.label113.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label113.ForeColor = System.Drawing.Color.Navy;
+            this.label113.Location = new System.Drawing.Point(156, 816);
+            this.label113.Name = "label113";
+            this.label113.Size = new System.Drawing.Size(131, 16);
+            this.label113.TabIndex = 74;
+            this.label113.Text = "CHỌN THỜI GIAN";
+            // 
+            // label114
+            // 
+            this.label114.AutoSize = true;
+            this.label114.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label114.ForeColor = System.Drawing.Color.Navy;
+            this.label114.Location = new System.Drawing.Point(208, 80);
+            this.label114.Name = "label114";
+            this.label114.Size = new System.Drawing.Size(58, 16);
+            this.label114.TabIndex = 74;
+            this.label114.Text = "ĐỒ THỊ";
+            // 
+            // label115
+            // 
+            this.label115.AutoSize = true;
+            this.label115.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label115.ForeColor = System.Drawing.Color.Navy;
+            this.label115.Location = new System.Drawing.Point(382, 816);
+            this.label115.Name = "label115";
+            this.label115.Size = new System.Drawing.Size(98, 16);
+            this.label115.TabIndex = 132;
+            this.label115.Text = "CHỌN TRẠM";
+            // 
+            // label116
+            // 
+            this.label116.AutoSize = true;
+            this.label116.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label116.ForeColor = System.Drawing.Color.Navy;
+            this.label116.Location = new System.Drawing.Point(522, 816);
+            this.label116.Name = "label116";
+            this.label116.Size = new System.Drawing.Size(166, 16);
+            this.label116.TabIndex = 133;
+            this.label116.Text = "BUTTON SHOW DATA";
+            // 
+            // label117
+            // 
+            this.label117.AutoSize = true;
+            this.label117.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label117.ForeColor = System.Drawing.Color.Navy;
+            this.label117.Location = new System.Drawing.Point(728, 816);
+            this.label117.Name = "label117";
+            this.label117.Size = new System.Drawing.Size(118, 16);
+            this.label117.TabIndex = 134;
+            this.label117.Text = "XUẤT BÁO CÁO";
+            // 
+            // label118
+            // 
+            this.label118.AutoSize = true;
+            this.label118.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label118.ForeColor = System.Drawing.Color.Navy;
+            this.label118.Location = new System.Drawing.Point(208, 139);
+            this.label118.Name = "label118";
+            this.label118.Size = new System.Drawing.Size(226, 16);
+            this.label118.TabIndex = 75;
+            this.label118.Text = "MỖI 30 PHÚT CẬP NHẬT 1 LẦN";
+            // 
+            // label119
+            // 
+            this.label119.AutoSize = true;
+            this.label119.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label119.ForeColor = System.Drawing.Color.Navy;
+            this.label119.Location = new System.Drawing.Point(314, 779);
+            this.label119.Name = "label119";
+            this.label119.Size = new System.Drawing.Size(98, 16);
+            this.label119.TabIndex = 133;
+            this.label119.Text = "CHỌN TRẠM";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
@@ -6734,6 +7228,8 @@ namespace ScadaQTNN
             this.tabPage1.ResumeLayout(false);
             this.panel17.ResumeLayout(false);
             this.panel17.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl86)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl85)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl121)).EndInit();
             this.panel20.ResumeLayout(false);
             this.panel20.PerformLayout();
@@ -6780,6 +7276,7 @@ namespace ScadaQTNN
             this.panel21.PerformLayout();
             this.groupBox7.ResumeLayout(false);
             this.groupBox7.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl82)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl63)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl78)).EndInit();
             this.panel15.ResumeLayout(false);
@@ -6793,6 +7290,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl59)).EndInit();
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl77)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl52)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl53)).EndInit();
             this.panel13.ResumeLayout(false);
@@ -6806,6 +7304,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl48)).EndInit();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl76)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl42)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl43)).EndInit();
             this.panel11.ResumeLayout(false);
@@ -6819,6 +7318,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl41)).EndInit();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl75)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl32)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl33)).EndInit();
             this.panel9.ResumeLayout(false);
@@ -6832,6 +7332,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl30)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl74)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl22)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl23)).EndInit();
             this.panel7.ResumeLayout(false);
@@ -6845,6 +7346,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl21)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.standardControl73)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl10)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl11)).EndInit();
             this.panel5.ResumeLayout(false);
@@ -6894,12 +7396,25 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl60)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl62)).EndInit();
             this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.panel35.ResumeLayout(false);
             this.panel35.PerformLayout();
             this.panel33.ResumeLayout(false);
             this.panel33.PerformLayout();
             this.panel34.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
+            this.panel36.ResumeLayout(false);
+            this.panel36.PerformLayout();
+            this.panel37.ResumeLayout(false);
+            this.panel37.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
+            this.panel38.ResumeLayout(false);
+            this.panel38.PerformLayout();
+            this.panel39.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView3)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -7302,6 +7817,36 @@ namespace ScadaQTNN
         private System.Windows.Forms.Panel panel34;
         private System.Windows.Forms.Panel panel35;
         private System.Windows.Forms.Label label107;
+        private System.Windows.Forms.Label label108;
+        private SymbolFactoryDotNet.StandardControl standardControl85;
+        private SymbolFactoryDotNet.StandardControl standardControl82;
+        private SymbolFactoryDotNet.StandardControl standardControl77;
+        private SymbolFactoryDotNet.StandardControl standardControl76;
+        private SymbolFactoryDotNet.StandardControl standardControl75;
+        private SymbolFactoryDotNet.StandardControl standardControl74;
+        private SymbolFactoryDotNet.StandardControl standardControl73;
+        private SymbolFactoryDotNet.StandardControl standardControl86;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.Button button58;
+        private System.Windows.Forms.Button button59;
+        private System.Windows.Forms.Label label110;
+        private System.Windows.Forms.Label label109;
+        private System.Windows.Forms.Label label115;
+        private System.Windows.Forms.Label label113;
+        private System.Windows.Forms.Panel panel36;
+        private System.Windows.Forms.Label label111;
+        private System.Windows.Forms.Panel panel37;
+        private System.Windows.Forms.Label label114;
+        private System.Windows.Forms.DataGridView dataGridView2;
+        private System.Windows.Forms.Panel panel38;
+        private System.Windows.Forms.Label label112;
+        private System.Windows.Forms.Panel panel39;
+        private System.Windows.Forms.DataGridView dataGridView3;
+        private System.Windows.Forms.Label label117;
+        private System.Windows.Forms.Label label116;
+        private System.Windows.Forms.Label label118;
+        private System.Windows.Forms.Label label119;
     }
 }
 
