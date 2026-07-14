@@ -34,14 +34,12 @@ namespace ScadaQTNN
             this.mainTabPanel = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.panel17 = new System.Windows.Forms.Panel();
+            this.label110 = new System.Windows.Forms.Label();
+            this.label109 = new System.Windows.Forms.Label();
             this.standardControl86 = new SymbolFactoryDotNet.StandardControl();
             this.label108 = new System.Windows.Forms.Label();
             this.standardControl85 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl121 = new SymbolFactoryDotNet.StandardControl();
-            this.panel20 = new System.Windows.Forms.Panel();
-            this.label104 = new System.Windows.Forms.Label();
-            this.button27 = new System.Windows.Forms.Button();
-            this.button24 = new System.Windows.Forms.Button();
             this.label92 = new System.Windows.Forms.Label();
             this.panel31 = new System.Windows.Forms.Panel();
             this.panel32 = new System.Windows.Forms.Panel();
@@ -129,6 +127,7 @@ namespace ScadaQTNN
             this.panel4 = new System.Windows.Forms.Panel();
             this.label9 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.button58 = new System.Windows.Forms.Button();
             this.panel21 = new System.Windows.Forms.Panel();
             this.button53 = new System.Windows.Forms.Button();
             this.label105 = new System.Windows.Forms.Label();
@@ -248,6 +247,11 @@ namespace ScadaQTNN
             this.standardControl39 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl40 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl41 = new SymbolFactoryDotNet.StandardControl();
+            this.panel20 = new System.Windows.Forms.Panel();
+            this.button59 = new System.Windows.Forms.Button();
+            this.label104 = new System.Windows.Forms.Label();
+            this.button27 = new System.Windows.Forms.Button();
+            this.button24 = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.standardControl75 = new SymbolFactoryDotNet.StandardControl();
             this.textBox56 = new System.Windows.Forms.TextBox();
@@ -424,6 +428,8 @@ namespace ScadaQTNN
             this.standardControl60 = new SymbolFactoryDotNet.StandardControl();
             this.standardControl62 = new SymbolFactoryDotNet.StandardControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label120 = new System.Windows.Forms.Label();
+            this.label119 = new System.Windows.Forms.Label();
             this.panel35 = new System.Windows.Forms.Panel();
             this.label107 = new System.Windows.Forms.Label();
             this.panel33 = new System.Windows.Forms.Panel();
@@ -432,38 +438,32 @@ namespace ScadaQTNN
             this.button57 = new System.Windows.Forms.Button();
             this.panel34 = new System.Windows.Forms.Panel();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.tabIcons = new System.Windows.Forms.ImageList(this.components);
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.button58 = new System.Windows.Forms.Button();
-            this.button59 = new System.Windows.Forms.Button();
-            this.label109 = new System.Windows.Forms.Label();
-            this.label110 = new System.Windows.Forms.Label();
+            this.label117 = new System.Windows.Forms.Label();
+            this.label116 = new System.Windows.Forms.Label();
+            this.label115 = new System.Windows.Forms.Label();
+            this.label113 = new System.Windows.Forms.Label();
             this.panel36 = new System.Windows.Forms.Panel();
             this.label111 = new System.Windows.Forms.Label();
             this.panel37 = new System.Windows.Forms.Panel();
+            this.label118 = new System.Windows.Forms.Label();
+            this.label114 = new System.Windows.Forms.Label();
             this.dataGridView2 = new System.Windows.Forms.DataGridView();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
             this.panel38 = new System.Windows.Forms.Panel();
             this.label112 = new System.Windows.Forms.Label();
             this.panel39 = new System.Windows.Forms.Panel();
             this.dataGridView3 = new System.Windows.Forms.DataGridView();
-            this.label113 = new System.Windows.Forms.Label();
-            this.label114 = new System.Windows.Forms.Label();
-            this.label115 = new System.Windows.Forms.Label();
-            this.label116 = new System.Windows.Forms.Label();
-            this.label117 = new System.Windows.Forms.Label();
-            this.label118 = new System.Windows.Forms.Label();
-            this.label119 = new System.Windows.Forms.Label();
+            this.tabIcons = new System.Windows.Forms.ImageList(this.components);
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.mainTabPanel.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.panel17.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl86)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl85)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl121)).BeginInit();
-            this.panel20.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl122)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl120)).BeginInit();
@@ -534,6 +534,7 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl39)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl40)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl41)).BeginInit();
+            this.panel20.SuspendLayout();
             this.groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl75)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl32)).BeginInit();
@@ -607,10 +608,10 @@ namespace ScadaQTNN
             this.panel34.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.tabPage3.SuspendLayout();
-            this.tabPage4.SuspendLayout();
             this.panel36.SuspendLayout();
             this.panel37.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
+            this.tabPage4.SuspendLayout();
             this.panel38.SuspendLayout();
             this.panel39.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView3)).BeginInit();
@@ -721,6 +722,32 @@ namespace ScadaQTNN
             this.panel17.TabIndex = 54;
             this.panel17.Paint += new System.Windows.Forms.PaintEventHandler(this.panel17_Paint);
             // 
+            // label110
+            // 
+            this.label110.AutoSize = true;
+            this.label110.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label110.ForeColor = System.Drawing.Color.Red;
+            this.label110.Location = new System.Drawing.Point(462, 518);
+            this.label110.Name = "label110";
+            this.label110.Size = new System.Drawing.Size(41, 18);
+            this.label110.TabIndex = 131;
+            this.label110.Text = "OFF";
+            this.label110.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label110.Visible = false;
+            // 
+            // label109
+            // 
+            this.label109.AutoSize = true;
+            this.label109.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label109.ForeColor = System.Drawing.Color.Lime;
+            this.label109.Location = new System.Drawing.Point(466, 518);
+            this.label109.Name = "label109";
+            this.label109.Size = new System.Drawing.Size(33, 18);
+            this.label109.TabIndex = 130;
+            this.label109.Text = "ON";
+            this.label109.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label109.Visible = false;
+            // 
             // standardControl86
             // 
             this.standardControl86.AnalogIntValue1 = ((short)(0));
@@ -795,68 +822,6 @@ namespace ScadaQTNN
             this.standardControl121.Stretch = true;
             this.standardControl121.SymbolHandle = ((long)(623812997));
             this.standardControl121.TabIndex = 101;
-            // 
-            // panel20
-            // 
-            this.panel20.BackColor = System.Drawing.Color.Gainsboro;
-            this.panel20.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel20.Controls.Add(this.button59);
-            this.panel20.Controls.Add(this.label104);
-            this.panel20.Controls.Add(this.button27);
-            this.panel20.Controls.Add(this.button24);
-            this.panel20.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.panel20.Location = new System.Drawing.Point(838, 419);
-            this.panel20.Name = "panel20";
-            this.panel20.Size = new System.Drawing.Size(262, 98);
-            this.panel20.TabIndex = 125;
-            // 
-            // label104
-            // 
-            this.label104.AutoSize = true;
-            this.label104.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label104.ForeColor = System.Drawing.Color.Navy;
-            this.label104.Location = new System.Drawing.Point(80, 5);
-            this.label104.Name = "label104";
-            this.label104.Size = new System.Drawing.Size(92, 16);
-            this.label104.TabIndex = 73;
-            this.label104.Text = "ĐIỀU KHIỂN";
-            // 
-            // button27
-            // 
-            this.button27.AllowDrop = true;
-            this.button27.BackColor = System.Drawing.Color.Yellow;
-            this.button27.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.button27.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button27.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button27.ForeColor = System.Drawing.Color.Black;
-            this.button27.Location = new System.Drawing.Point(17, 35);
-            this.button27.Margin = new System.Windows.Forms.Padding(0);
-            this.button27.Name = "button27";
-            this.button27.Size = new System.Drawing.Size(110, 44);
-            this.button27.TabIndex = 49;
-            this.button27.Text = "TANK \r\nOFF REMOTE";
-            this.button27.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this.button27.UseVisualStyleBackColor = false;
-            this.button27.Visible = false;
-            this.button27.Click += new System.EventHandler(this.button27_Click);
-            // 
-            // button24
-            // 
-            this.button24.AllowDrop = true;
-            this.button24.BackColor = System.Drawing.Color.MediumAquamarine;
-            this.button24.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.button24.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button24.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button24.ForeColor = System.Drawing.Color.Black;
-            this.button24.Location = new System.Drawing.Point(17, 35);
-            this.button24.Margin = new System.Windows.Forms.Padding(0);
-            this.button24.Name = "button24";
-            this.button24.Size = new System.Drawing.Size(110, 44);
-            this.button24.TabIndex = 48;
-            this.button24.Text = "TANK\r\nREMOTE";
-            this.button24.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this.button24.UseVisualStyleBackColor = false;
-            this.button24.Click += new System.EventHandler(this.button24_Click);
             // 
             // label92
             // 
@@ -2248,7 +2213,6 @@ namespace ScadaQTNN
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.button58);
             this.panel1.Controls.Add(this.panel21);
             this.panel1.Controls.Add(this.groupBox7);
             this.panel1.Controls.Add(this.groupBox6);
@@ -2286,6 +2250,24 @@ namespace ScadaQTNN
             this.panel1.Size = new System.Drawing.Size(1285, 922);
             this.panel1.TabIndex = 0;
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            // 
+            // button58
+            // 
+            this.button58.AllowDrop = true;
+            this.button58.BackColor = System.Drawing.Color.Yellow;
+            this.button58.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button58.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button58.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button58.ForeColor = System.Drawing.Color.Black;
+            this.button58.Location = new System.Drawing.Point(135, 35);
+            this.button58.Margin = new System.Windows.Forms.Padding(0);
+            this.button58.Name = "button58";
+            this.button58.Size = new System.Drawing.Size(110, 44);
+            this.button58.TabIndex = 75;
+            this.button58.Text = "GIẾNG \r\nOFF REMOTE";
+            this.button58.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.button58.UseVisualStyleBackColor = false;
+            this.button58.Visible = false;
             // 
             // panel21
             // 
@@ -4066,6 +4048,87 @@ namespace ScadaQTNN
             this.standardControl41.Stretch = true;
             this.standardControl41.SymbolHandle = ((long)(1088408125));
             this.standardControl41.TabIndex = 82;
+            // 
+            // panel20
+            // 
+            this.panel20.BackColor = System.Drawing.Color.Gainsboro;
+            this.panel20.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel20.Controls.Add(this.button58);
+            this.panel20.Controls.Add(this.button59);
+            this.panel20.Controls.Add(this.label104);
+            this.panel20.Controls.Add(this.button27);
+            this.panel20.Controls.Add(this.button24);
+            this.panel20.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.panel20.Location = new System.Drawing.Point(838, 419);
+            this.panel20.Name = "panel20";
+            this.panel20.Size = new System.Drawing.Size(262, 98);
+            this.panel20.TabIndex = 125;
+            // 
+            // button59
+            // 
+            this.button59.AllowDrop = true;
+            this.button59.BackColor = System.Drawing.Color.MediumAquamarine;
+            this.button59.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button59.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button59.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button59.ForeColor = System.Drawing.Color.Black;
+            this.button59.Location = new System.Drawing.Point(135, 35);
+            this.button59.Margin = new System.Windows.Forms.Padding(0);
+            this.button59.Name = "button59";
+            this.button59.Size = new System.Drawing.Size(110, 44);
+            this.button59.TabIndex = 74;
+            this.button59.Text = "GIẾNG \r\nON REMOTE";
+            this.button59.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.button59.UseVisualStyleBackColor = false;
+            this.button59.Click += new System.EventHandler(this.button59_Click);
+            // 
+            // label104
+            // 
+            this.label104.AutoSize = true;
+            this.label104.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label104.ForeColor = System.Drawing.Color.Navy;
+            this.label104.Location = new System.Drawing.Point(80, 5);
+            this.label104.Name = "label104";
+            this.label104.Size = new System.Drawing.Size(92, 16);
+            this.label104.TabIndex = 73;
+            this.label104.Text = "ĐIỀU KHIỂN";
+            // 
+            // button27
+            // 
+            this.button27.AllowDrop = true;
+            this.button27.BackColor = System.Drawing.Color.Yellow;
+            this.button27.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button27.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button27.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button27.ForeColor = System.Drawing.Color.Black;
+            this.button27.Location = new System.Drawing.Point(17, 35);
+            this.button27.Margin = new System.Windows.Forms.Padding(0);
+            this.button27.Name = "button27";
+            this.button27.Size = new System.Drawing.Size(110, 44);
+            this.button27.TabIndex = 49;
+            this.button27.Text = "TANK \r\nOFF REMOTE";
+            this.button27.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.button27.UseVisualStyleBackColor = false;
+            this.button27.Visible = false;
+            this.button27.Click += new System.EventHandler(this.button27_Click);
+            // 
+            // button24
+            // 
+            this.button24.AllowDrop = true;
+            this.button24.BackColor = System.Drawing.Color.MediumAquamarine;
+            this.button24.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button24.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button24.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button24.ForeColor = System.Drawing.Color.Black;
+            this.button24.Location = new System.Drawing.Point(17, 35);
+            this.button24.Margin = new System.Windows.Forms.Padding(0);
+            this.button24.Name = "button24";
+            this.button24.Size = new System.Drawing.Size(110, 44);
+            this.button24.TabIndex = 48;
+            this.button24.Text = "TANK\r\nREMOTE";
+            this.button24.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.button24.UseVisualStyleBackColor = false;
+            this.button24.Click += new System.EventHandler(this.button24_Click);
             // 
             // groupBox4
             // 
@@ -6830,6 +6893,7 @@ namespace ScadaQTNN
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPage2.Controls.Add(this.label120);
             this.tabPage2.Controls.Add(this.label119);
             this.tabPage2.Controls.Add(this.panel35);
             this.tabPage2.Controls.Add(this.panel33);
@@ -6841,6 +6905,28 @@ namespace ScadaQTNN
             this.tabPage2.Size = new System.Drawing.Size(1896, 983);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "LOGS";
+            // 
+            // label120
+            // 
+            this.label120.AutoSize = true;
+            this.label120.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label120.ForeColor = System.Drawing.Color.Navy;
+            this.label120.Location = new System.Drawing.Point(441, 779);
+            this.label120.Name = "label120";
+            this.label120.Size = new System.Drawing.Size(132, 16);
+            this.label120.TabIndex = 134;
+            this.label120.Text = "ĐÃ XỬ LÝ TÁT CẢ";
+            // 
+            // label119
+            // 
+            this.label119.AutoSize = true;
+            this.label119.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label119.ForeColor = System.Drawing.Color.Navy;
+            this.label119.Location = new System.Drawing.Point(314, 779);
+            this.label119.Name = "label119";
+            this.label119.Size = new System.Drawing.Size(98, 16);
+            this.label119.TabIndex = 133;
+            this.label119.Text = "CHỌN TRẠM";
             // 
             // panel35
             // 
@@ -6944,21 +7030,6 @@ namespace ScadaQTNN
             this.dataGridView1.TabIndex = 0;
             this.dataGridView1.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellDoubleClick_1);
             // 
-            // tabIcons
-            // 
-            this.tabIcons.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("tabIcons.ImageStream")));
-            this.tabIcons.TransparentColor = System.Drawing.Color.Transparent;
-            this.tabIcons.Images.SetKeyName(0, "02.Tab_1Home.ico");
-            this.tabIcons.Images.SetKeyName(1, "02.Tab_2Setting.ico");
-            this.tabIcons.Images.SetKeyName(2, "02.Tab_3Trend.ico");
-            this.tabIcons.Images.SetKeyName(3, "02.Tab_4Warning.ico");
-            this.tabIcons.Images.SetKeyName(4, "02.Tab_5Logging.ico");
-            // 
-            // timer1
-            // 
-            this.timer1.Interval = 250;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
             // tabPage3
             // 
             this.tabPage3.BackColor = System.Drawing.Color.WhiteSmoke;
@@ -6976,80 +7047,49 @@ namespace ScadaQTNN
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "DATA";
             // 
-            // tabPage4
+            // label117
             // 
-            this.tabPage4.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.tabPage4.Controls.Add(this.panel38);
-            this.tabPage4.Controls.Add(this.panel39);
-            this.tabPage4.ImageIndex = 1;
-            this.tabPage4.Location = new System.Drawing.Point(4, 54);
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(1896, 983);
-            this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "SETTINGS";
+            this.label117.AutoSize = true;
+            this.label117.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label117.ForeColor = System.Drawing.Color.Navy;
+            this.label117.Location = new System.Drawing.Point(728, 816);
+            this.label117.Name = "label117";
+            this.label117.Size = new System.Drawing.Size(118, 16);
+            this.label117.TabIndex = 134;
+            this.label117.Text = "XUẤT BÁO CÁO";
             // 
-            // button58
+            // label116
             // 
-            this.button58.AllowDrop = true;
-            this.button58.BackColor = System.Drawing.Color.Yellow;
-            this.button58.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.button58.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button58.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button58.ForeColor = System.Drawing.Color.Black;
-            this.button58.Location = new System.Drawing.Point(1088, 460);
-            this.button58.Margin = new System.Windows.Forms.Padding(0);
-            this.button58.Name = "button58";
-            this.button58.Size = new System.Drawing.Size(110, 44);
-            this.button58.TabIndex = 75;
-            this.button58.Text = "GIẾNG \r\nOFF REMOTE";
-            this.button58.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this.button58.UseVisualStyleBackColor = false;
-            this.button58.Visible = false;
+            this.label116.AutoSize = true;
+            this.label116.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label116.ForeColor = System.Drawing.Color.Navy;
+            this.label116.Location = new System.Drawing.Point(522, 816);
+            this.label116.Name = "label116";
+            this.label116.Size = new System.Drawing.Size(166, 16);
+            this.label116.TabIndex = 133;
+            this.label116.Text = "BUTTON SHOW DATA";
             // 
-            // button59
+            // label115
             // 
-            this.button59.AllowDrop = true;
-            this.button59.BackColor = System.Drawing.Color.MediumAquamarine;
-            this.button59.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.button59.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button59.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button59.ForeColor = System.Drawing.Color.Black;
-            this.button59.Location = new System.Drawing.Point(135, 35);
-            this.button59.Margin = new System.Windows.Forms.Padding(0);
-            this.button59.Name = "button59";
-            this.button59.Size = new System.Drawing.Size(110, 44);
-            this.button59.TabIndex = 74;
-            this.button59.Text = "GIẾNG \r\nON REMOTE";
-            this.button59.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this.button59.UseVisualStyleBackColor = false;
-            this.button59.Click += new System.EventHandler(this.button59_Click);
+            this.label115.AutoSize = true;
+            this.label115.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label115.ForeColor = System.Drawing.Color.Navy;
+            this.label115.Location = new System.Drawing.Point(382, 816);
+            this.label115.Name = "label115";
+            this.label115.Size = new System.Drawing.Size(98, 16);
+            this.label115.TabIndex = 132;
+            this.label115.Text = "CHỌN TRẠM";
             // 
-            // label109
+            // label113
             // 
-            this.label109.AutoSize = true;
-            this.label109.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label109.ForeColor = System.Drawing.Color.Lime;
-            this.label109.Location = new System.Drawing.Point(466, 518);
-            this.label109.Name = "label109";
-            this.label109.Size = new System.Drawing.Size(33, 18);
-            this.label109.TabIndex = 130;
-            this.label109.Text = "ON";
-            this.label109.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.label109.Visible = false;
-            // 
-            // label110
-            // 
-            this.label110.AutoSize = true;
-            this.label110.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label110.ForeColor = System.Drawing.Color.Red;
-            this.label110.Location = new System.Drawing.Point(462, 518);
-            this.label110.Name = "label110";
-            this.label110.Size = new System.Drawing.Size(41, 18);
-            this.label110.TabIndex = 131;
-            this.label110.Text = "OFF";
-            this.label110.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.label110.Visible = false;
+            this.label113.AutoSize = true;
+            this.label113.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label113.ForeColor = System.Drawing.Color.Navy;
+            this.label113.Location = new System.Drawing.Point(156, 816);
+            this.label113.Name = "label113";
+            this.label113.Size = new System.Drawing.Size(131, 16);
+            this.label113.TabIndex = 74;
+            this.label113.Text = "CHỌN THỜI GIAN";
             // 
             // panel36
             // 
@@ -7083,6 +7123,28 @@ namespace ScadaQTNN
             this.panel37.Size = new System.Drawing.Size(1880, 688);
             this.panel37.TabIndex = 130;
             // 
+            // label118
+            // 
+            this.label118.AutoSize = true;
+            this.label118.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label118.ForeColor = System.Drawing.Color.Navy;
+            this.label118.Location = new System.Drawing.Point(208, 139);
+            this.label118.Name = "label118";
+            this.label118.Size = new System.Drawing.Size(226, 16);
+            this.label118.TabIndex = 75;
+            this.label118.Text = "MỖI 30 PHÚT CẬP NHẬT 1 LẦN";
+            // 
+            // label114
+            // 
+            this.label114.AutoSize = true;
+            this.label114.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label114.ForeColor = System.Drawing.Color.Navy;
+            this.label114.Location = new System.Drawing.Point(208, 80);
+            this.label114.Name = "label114";
+            this.label114.Size = new System.Drawing.Size(58, 16);
+            this.label114.TabIndex = 74;
+            this.label114.Text = "ĐỒ THỊ";
+            // 
             // dataGridView2
             // 
             this.dataGridView2.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
@@ -7092,6 +7154,19 @@ namespace ScadaQTNN
             this.dataGridView2.Name = "dataGridView2";
             this.dataGridView2.Size = new System.Drawing.Size(1746, 671);
             this.dataGridView2.TabIndex = 0;
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPage4.Controls.Add(this.panel38);
+            this.tabPage4.Controls.Add(this.panel39);
+            this.tabPage4.ImageIndex = 1;
+            this.tabPage4.Location = new System.Drawing.Point(4, 54);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(1896, 983);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "SETTINGS";
             // 
             // panel38
             // 
@@ -7133,82 +7208,20 @@ namespace ScadaQTNN
             this.dataGridView3.Size = new System.Drawing.Size(1746, 671);
             this.dataGridView3.TabIndex = 0;
             // 
-            // label113
+            // tabIcons
             // 
-            this.label113.AutoSize = true;
-            this.label113.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label113.ForeColor = System.Drawing.Color.Navy;
-            this.label113.Location = new System.Drawing.Point(156, 816);
-            this.label113.Name = "label113";
-            this.label113.Size = new System.Drawing.Size(131, 16);
-            this.label113.TabIndex = 74;
-            this.label113.Text = "CHỌN THỜI GIAN";
+            this.tabIcons.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("tabIcons.ImageStream")));
+            this.tabIcons.TransparentColor = System.Drawing.Color.Transparent;
+            this.tabIcons.Images.SetKeyName(0, "02.Tab_1Home.ico");
+            this.tabIcons.Images.SetKeyName(1, "02.Tab_2Setting.ico");
+            this.tabIcons.Images.SetKeyName(2, "02.Tab_3Trend.ico");
+            this.tabIcons.Images.SetKeyName(3, "02.Tab_4Warning.ico");
+            this.tabIcons.Images.SetKeyName(4, "02.Tab_5Logging.ico");
             // 
-            // label114
+            // timer1
             // 
-            this.label114.AutoSize = true;
-            this.label114.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label114.ForeColor = System.Drawing.Color.Navy;
-            this.label114.Location = new System.Drawing.Point(208, 80);
-            this.label114.Name = "label114";
-            this.label114.Size = new System.Drawing.Size(58, 16);
-            this.label114.TabIndex = 74;
-            this.label114.Text = "ĐỒ THỊ";
-            // 
-            // label115
-            // 
-            this.label115.AutoSize = true;
-            this.label115.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label115.ForeColor = System.Drawing.Color.Navy;
-            this.label115.Location = new System.Drawing.Point(382, 816);
-            this.label115.Name = "label115";
-            this.label115.Size = new System.Drawing.Size(98, 16);
-            this.label115.TabIndex = 132;
-            this.label115.Text = "CHỌN TRẠM";
-            // 
-            // label116
-            // 
-            this.label116.AutoSize = true;
-            this.label116.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label116.ForeColor = System.Drawing.Color.Navy;
-            this.label116.Location = new System.Drawing.Point(522, 816);
-            this.label116.Name = "label116";
-            this.label116.Size = new System.Drawing.Size(166, 16);
-            this.label116.TabIndex = 133;
-            this.label116.Text = "BUTTON SHOW DATA";
-            // 
-            // label117
-            // 
-            this.label117.AutoSize = true;
-            this.label117.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label117.ForeColor = System.Drawing.Color.Navy;
-            this.label117.Location = new System.Drawing.Point(728, 816);
-            this.label117.Name = "label117";
-            this.label117.Size = new System.Drawing.Size(118, 16);
-            this.label117.TabIndex = 134;
-            this.label117.Text = "XUẤT BÁO CÁO";
-            // 
-            // label118
-            // 
-            this.label118.AutoSize = true;
-            this.label118.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label118.ForeColor = System.Drawing.Color.Navy;
-            this.label118.Location = new System.Drawing.Point(208, 139);
-            this.label118.Name = "label118";
-            this.label118.Size = new System.Drawing.Size(226, 16);
-            this.label118.TabIndex = 75;
-            this.label118.Text = "MỖI 30 PHÚT CẬP NHẬT 1 LẦN";
-            // 
-            // label119
-            // 
-            this.label119.AutoSize = true;
-            this.label119.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label119.ForeColor = System.Drawing.Color.Navy;
-            this.label119.Location = new System.Drawing.Point(314, 779);
-            this.label119.Name = "label119";
-            this.label119.Size = new System.Drawing.Size(98, 16);
-            this.label119.TabIndex = 133;
-            this.label119.Text = "CHỌN TRẠM";
+            this.timer1.Interval = 250;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // Form1
             // 
@@ -7231,8 +7244,6 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl86)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl85)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl121)).EndInit();
-            this.panel20.ResumeLayout(false);
-            this.panel20.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl122)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl120)).EndInit();
@@ -7316,6 +7327,8 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.standardControl39)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl40)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl41)).EndInit();
+            this.panel20.ResumeLayout(false);
+            this.panel20.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.standardControl75)).EndInit();
@@ -7405,12 +7418,12 @@ namespace ScadaQTNN
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
-            this.tabPage4.ResumeLayout(false);
             this.panel36.ResumeLayout(false);
             this.panel36.PerformLayout();
             this.panel37.ResumeLayout(false);
             this.panel37.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
+            this.tabPage4.ResumeLayout(false);
             this.panel38.ResumeLayout(false);
             this.panel38.PerformLayout();
             this.panel39.ResumeLayout(false);
@@ -7847,6 +7860,7 @@ namespace ScadaQTNN
         private System.Windows.Forms.Label label116;
         private System.Windows.Forms.Label label118;
         private System.Windows.Forms.Label label119;
+        private System.Windows.Forms.Label label120;
     }
 }
 
